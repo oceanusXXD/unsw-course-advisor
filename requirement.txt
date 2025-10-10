@@ -1,0 +1,12 @@
+requests
+beautifulsoup4
+aiohttp
+pandas
+sqlalchemy
+sentence-transformers
+faiss-cpu
+fastapi
+uvicorn[standard]
+httpx
+streamlit
+python-dotenv
