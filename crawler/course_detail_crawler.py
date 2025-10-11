@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 UNSW Handbook 课程详情爬虫（防封与可续抓增强版）
-- 在你原有脚本基础上加入随机 UA / Referer、不规则延时、重试与中间结果恢复
+- 原有脚本基础上加入随机 UA / Referer、不规则延时、重试与中间结果恢复
 - 保持按 undergraduate->postgraduate->research 顺序逐条抓取每个 URL（使用 url_override）
 - 若 ./data/{SUBJ}_course_detail.json 已存在，会跳过已抓取的 course_code
 """
