@@ -4,6 +4,6 @@ from . import views
 
 urlpatterns = [
     path("chat/", views.chat, name="chat"),
-    path("chat_multi/", views.chat_multiround, name="chat_multi"),
+    path("chat_multiround/", views.chat_multiround, name="chat_multiround"),
 ]
 
