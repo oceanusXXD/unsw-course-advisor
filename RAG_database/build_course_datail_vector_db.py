@@ -1,4 +1,4 @@
-# build_rag_vectorstore.py
+# build_course_datail_vector_db.py
 """
 用途：
 - 从 ./crawler/subject.txt 读取 subject 列表
@@ -15,24 +15,35 @@
 import os
 import json
 import glob
+import re
 from typing import List, Dict, Any, Tuple
 from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import faiss
 from tqdm import tqdm
-
+from openai import OpenAI
+from dotenv import load_dotenv
 # ------------ 配置 ------------
 SUBJECT_FILE = "../crawler/subject.txt"
-DATA_DIR = "../data"
+DATA_DIR = "../course_detail_data"
 VECTOR_STORE_DIR = "./vector_store"
 FAISS_INDEX_PATH = os.path.join(VECTOR_STORE_DIR, "faiss_index.bin")
 METADATA_PATH = os.path.join(VECTOR_STORE_DIR, "metadata.jsonl")
-EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
-BATCH_TEXTS = 256   # 每次生成 embeddings 的文本数量（可调）
-CHUNK_MAX_CHARS = 1000
-CHUNK_OVERLAP = 200
-TOP_K = 5
+LOCAL_MODEL_NAME = "all-mpnet-base-v2"  # 升级到更强大的模型
+BATCH_TEXTS = 128   # 更小的批次大小以适应更大的模型
+CHUNK_MAX_CHARS = 512  # 更小的块大小
+CHUNK_OVERLAP = 128    # 适当的重叠
+TOP_K = 10             # 返回更多结果用于评估
+USE_API_EMBEDDING = True  # True 使用百炼 API，False 使用本地模型
+API_MODEL_NAME = "text-embedding-v4"
+load_dotenv()
+client = None
+if USE_API_EMBEDDING:
+    client = OpenAI(
+        api_key=os.getenv("DASHSCOPE_API_KEY"),
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+    )
 # -----------------------------
 
 os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
@@ -104,24 +115,37 @@ def normalize_equivalent(equiv: Any) -> str:
 def record_to_content_and_meta(record: Dict[str, Any], source_file: str, subject: str) -> Tuple[str, Dict[str, Any]]:
     # 兼容多种命名字段
     course_code = record.get("course_code") or record.get("CourseCode") or record.get("code") or ""
+    title = strip_html(record.get("title") or record.get("name") or "")
+    
+    # 提取更多可能包含关键信息的字段
     overview = strip_html(record.get("overview") or record.get("Overview") or record.get("description") or "")
-    add_enrol = strip_html(record.get("additional_enrolment_constraints") or record.get("additionalEnrolmentConstraints") or record.get("prerequisites") or "")
+    learning_outcomes = strip_html(record.get("learning_outcomes") or record.get("learningOutcomes") or "")
+    assessment = strip_html(record.get("assessment") or record.get("assessmentMethods") or "")
+    prerequisites = strip_html(record.get("prerequisites") or record.get("pre-requisites") or "")
+    add_enrol = strip_html(record.get("additional_enrolment_constraints") or record.get("additionalEnrolmentConstraints") or "")
     equiv = normalize_equivalent(record.get("equivalent_courses") or record.get("equivalentCourses") or record.get("equivalents") or "")
     offering_terms = strip_html(record.get("offering_terms") or record.get("offeringTerms") or record.get("terms") or "")
     delivery = delivery_to_text(record.get("delivery") or record.get("delivery_modes") or record.get("deliveryMode"))
-    title = strip_html(record.get("title") or record.get("name") or "")
-    # 合并文本
+    
+    # 合并文本 - 使用结构化格式
     content_parts = [
-        f"Title: {title}" if title else "",
-        f"Course Code: {course_code}" if course_code else "",
-        f"Subject: {subject}",
-        f"Overview: {overview}" if overview else "",
-        f"Additional Enrolment Constraints: {add_enrol}" if add_enrol else "",
-        f"Equivalent Courses: {equiv}" if equiv else "",
-        f"Offering Terms: {offering_terms}" if offering_terms else "",
-        f"Delivery: {delivery}" if delivery else ""
+        f"# COURSE TITLE: {title}" if title else "",
+        f"## COURSE CODE: {course_code}" if course_code else "",
+        f"### SUBJECT: {subject}",
+        f"#### OVERVIEW:\n{overview}" if overview else "",
+        f"#### LEARNING OUTCOMES:\n{learning_outcomes}" if learning_outcomes else "",
+        f"#### ASSESSMENT METHODS:\n{assessment}" if assessment else "",
+        f"#### PREREQUISITES:\n{prerequisites}" if prerequisites else "",
+        f"#### ADDITIONAL ENROLMENT CONSTRAINTS:\n{add_enrol}" if add_enrol else "",
+        f"#### EQUIVALENT COURSES: {equiv}" if equiv else "",
+        f"#### OFFERING TERMS: {offering_terms}" if offering_terms else "",
+        f"#### DELIVERY MODES: {delivery}" if delivery else ""
     ]
-    content = "\n".join([p for p in content_parts if p.strip() != ""])
+    
+    # 过滤空内容并连接
+    content = "\n\n".join([p for p in content_parts if p.strip() != ""])
+    
+    # 增强元数据
     metadata = {
         "course_code": course_code,
         "title": title,
@@ -131,6 +155,9 @@ def record_to_content_and_meta(record: Dict[str, Any], source_file: str, subject
         "delivery": delivery,
         "equivalent_courses": equiv,
         "additional_enrolment_constraints": add_enrol,
+        "learning_outcomes": learning_outcomes[:200] + "..." if learning_outcomes else "",
+        "assessment": assessment[:200] + "..." if assessment else "",
+        "prerequisites": prerequisites[:200] + "..." if prerequisites else ""
     }
     return content, metadata
 
@@ -140,16 +167,33 @@ def chunk_text(text: str, max_chars: int = CHUNK_MAX_CHARS, overlap: int = CHUNK
     text = text.strip()
     if len(text) <= max_chars:
         return [text]
+    
+    # 尝试使用句子边界进行分块
     chunks = []
     start = 0
     L = len(text)
+    
     while start < L:
         end = min(start + max_chars, L)
-        chunk = text[start:end]
+        
+        # 尝试在句子边界处结束
+        if end < L:
+            # 找到最近的句子结束点
+            sentence_end = text.rfind('.', start, end) + 1
+            if sentence_end > start and (sentence_end - start) > max_chars * 0.7:
+                end = sentence_end
+            else:
+                # 如果没有找到合适的句子结束点，尝试在段落边界处结束
+                paragraph_end = text.rfind('\n\n', start, end)
+                if paragraph_end > start and (paragraph_end - start) > max_chars * 0.7:
+                    end = paragraph_end
+        
+        chunk = text[start:end].strip()
         chunks.append(chunk)
         if end == L:
             break
-        start = max(0, end - overlap)
+        start = max(start, end - overlap)
+    
     return chunks
 
 def robust_load_json(path: str) -> Any:
@@ -185,28 +229,46 @@ def robust_load_json(path: str) -> Any:
     # 最后抛错
     raise RuntimeError(f"无法解析 JSON 文件: {path}")
 
-def build_index_incremental(all_texts_iterable, model_name: str):
+def build_index_incremental(all_texts_iterable, model_name: str = LOCAL_MODEL_NAME):
     """
-    all_texts_iterable: generator or iterable that yields tuples (text, metadata)
-    分批生成 embeddings 并增量加入 FAISS。
-    返回 index, metadata_list, model
+    all_texts_iterable: generator 或 iterable，yield (text, metadata)
+    增量生成 embeddings 并构建 FAISS
     """
-    print(f"加载 embedding 模型：{model_name}")
-    model = SentenceTransformer(model_name)
+    print(f"加载 embedding 模型：{model_name if not USE_API_EMBEDDING else API_MODEL_NAME}")
+    model = None
+    if not USE_API_EMBEDDING:
+        model = SentenceTransformer(model_name)
+
     index = None
     metadata_list = []
     total_vectors = 0
-
-    batch_texts = []
-    batch_metas = []
+    batch_texts, batch_metas = [], []
 
     def flush_batch(batch_texts, batch_metas):
         nonlocal index, total_vectors
         if not batch_texts:
             return
-        emb = model.encode(batch_texts, batch_size=64, show_progress_bar=False, convert_to_numpy=True)
-        if emb.dtype != np.float32:
-            emb = emb.astype(np.float32)
+
+        if USE_API_EMBEDDING:
+            emb_list = []
+            for text in batch_texts:
+                try:
+                    resp = client.embeddings.create(
+                        model=API_MODEL_NAME,
+                        input=text,
+                        dimensions=1024,
+                        encoding_format="float"
+                    )
+                    emb_list.append(resp.data[0].embedding)
+                except Exception as e:
+                    print(f"[flush_batch] embedding 调用失败: {e}")
+                    emb_list.append([0.0]*1024)
+            emb = np.array(emb_list, dtype=np.float32)
+        else:
+            emb = model.encode(batch_texts, batch_size=BATCH_TEXTS, show_progress_bar=False, convert_to_numpy=True)
+            if emb.dtype != np.float32:
+                emb = emb.astype(np.float32)
+
         faiss.normalize_L2(emb)
         if index is None:
             dim = emb.shape[1]
@@ -215,28 +277,27 @@ def build_index_incremental(all_texts_iterable, model_name: str):
         index.add(emb)
         total_vectors += emb.shape[0]
         metadata_list.extend(batch_metas)
-        # 清空传入列表（调用方会给新的空列表）
-        return
 
-    # 迭代输入生成 batches
-    for text, meta in all_texts_iterable:
+    for text, meta in tqdm(all_texts_iterable, desc="处理文档"):
         batch_texts.append(text)
         batch_metas.append(meta)
         if len(batch_texts) >= BATCH_TEXTS:
             flush_batch(batch_texts, batch_metas)
-            batch_texts = []
-            batch_metas = []
+            batch_texts, batch_metas = [], []
 
-    # flush remain
     if batch_texts:
         flush_batch(batch_texts, batch_metas)
 
     if index is None:
-        raise RuntimeError("没有生成任何向量，无法创建索引。请检查数据来源。")
+        raise RuntimeError("没有生成任何向量，无法创建索引，请检查数据来源。")
     print(f"总向量数：{total_vectors}")
     return index, metadata_list, model
 
-def query_index(query: str, model: SentenceTransformer, index: faiss.Index, metadata: List[Dict[str, Any]], top_k: int = 5):
+def query_index(query: str, model: SentenceTransformer, index: faiss.Index, metadata: List[Dict[str, Any]], top_k: int = 5, expand: bool = False):
+    # 查询扩展
+    if expand:
+        query = expand_query(query)
+    
     q_emb = model.encode([query], convert_to_numpy=True)
     if q_emb.dtype != np.float32:
         q_emb = q_emb.astype(np.float32)
@@ -250,6 +311,53 @@ def query_index(query: str, model: SentenceTransformer, index: faiss.Index, meta
         m["score"] = float(score)
         results.append(m)
     return results
+
+def expand_query(query: str) -> str:
+    """添加相关术语扩展查询"""
+    expansions = {
+        "principles": ["fundamentals", "basics", "core concepts"],
+        "methods": ["techniques", "approaches", "methodologies"],
+        "analysis": ["evaluation", "assessment", "examination"],
+        "introduction": ["overview", "foundation", "primer"]
+    }
+    
+    expanded = []
+    for word in query.split():
+        word_lower = word.lower()
+        if word_lower in expansions:
+            expanded.append(word)
+            expanded.extend(expansions[word_lower])
+        else:
+            expanded.append(word)
+    
+    return " ".join(expanded)
+
+def evaluate_retrieval(model, index, metadata):
+    """评估检索效果"""
+    test_queries = [
+        ("Introduction to programming", "COMP1000"),
+        ("Advanced calculus", "MATH2001"),
+        ("Financial accounting principles", "ACCT2010")
+    ]
+    
+    print("\n检索效果评估:")
+    for query, expected_code in test_queries:
+        print(f"\n查询: '{query}'")
+        print(f"预期课程: {expected_code}")
+        
+        # 普通查询
+        results = query_index(query, model, index, metadata, top_k=3)
+        found = any(r.get('course_code') == expected_code for r in results)
+        print(f"普通查询 - 预期课程{'找到' if found else '未找到'}")
+        for i, r in enumerate(results, 1):
+            print(f"  {i}. {r.get('course_code')} - {r.get('title')} (score: {r.get('score'):.4f})")
+        
+        # 扩展查询
+        results_exp = query_index(query, model, index, metadata, top_k=3, expand=True)
+        found_exp = any(r.get('course_code') == expected_code for r in results_exp)
+        print(f"扩展查询 - 预期课程{'找到' if found_exp else '未找到'}")
+        for i, r in enumerate(results_exp, 1):
+            print(f"  {i}. {r.get('course_code')} - {r.get('title')} (score: {r.get('score'):.4f})")
 
 def main():
     subjects = load_subjects(SUBJECT_FILE)
@@ -304,7 +412,7 @@ def main():
                         yield c, meta_copy
 
     # 构建索引（增量）
-    index, metadata_list, model = build_index_incremental(texts_generator(), EMBEDDING_MODEL_NAME)
+    index, metadata_list, model = build_index_incremental(texts_generator(), API_MODEL_NAME if USE_API_EMBEDDING else LOCAL_MODEL_NAME)
 
     # 保存索引
     faiss.write_index(index, FAISS_INDEX_PATH)
@@ -323,6 +431,9 @@ def main():
     for i, r in enumerate(res, 1):
         print(f"Top {i}: course_code={r.get('course_code')}, title={r.get('title')}, subject={r.get('subject')}, score={r.get('score'):.4f}")
         # 如果你想查看 content，可以打印 r.get('_content')[:500]
+    
+    # 评估检索效果
+    evaluate_retrieval(model, index, metadata_list)
 
 if __name__ == "__main__":
     main()
