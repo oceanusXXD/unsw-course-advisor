@@ -24,7 +24,7 @@ import time
 import uuid
 import traceback
 import requests
-from typing import Dict, Any, Optional, List, Annotated, Literal, Callable
+from typing import Dict, Any, Optional, List, Annotated, Literal, Callable,Iterator, Union
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
@@ -296,9 +296,6 @@ def _message_to_dict(msg) -> Dict[str, str]:
     else:
         return {"role": "unknown", "content": str(msg)}
 
-def _messages_to_dicts(messages: List) -> List[Dict[str, str]]:
-    """Convert messages to plain dicts."""
-    return [_message_to_dict(m) for m in messages]
 
 def load_memory(user_id: Optional[str]) -> Dict[str, Any]:
     """加载用户记忆（使用缓存）"""
@@ -340,42 +337,120 @@ def save_memory(user_id: Optional[str], memory: Dict[str, Any]):
             print(f"⚠️  Memory save error: {e}")
 
 # --- Core LLM Call ---
-def call_qwen_sync(messages: list, model: Optional[str] = None, system_prompt: Optional[str] = None, 
-                   purpose: str = "general", base_url: Optional[str] = None, 
-                   api_key: Optional[str] = None, **kwargs) -> str:
-    """调用 Qwen LLM API，同步接口（带性能监控）"""
+def call_qwen_sync(
+    messages: list, 
+    model: Optional[str] = None, 
+    system_prompt: Optional[str] = None, 
+    purpose: str = "general", 
+    base_url: Optional[str] = None, 
+    api_key: Optional[str] = None, 
+    stream: bool = True,  # <-- Streaming mode
+    **kwargs
+) -> Union[str, Iterator[str]]:
+    """
+    调用 Qwen LLM API。
+    - stream=True 时，返回官方 chunk 流式输出。
+    - stream=False 时，返回完整字符串。
+    支持多轮对话安全调用，避免 400 错误。
+    """
     start_time = time.time()
-    safe_messages = _messages_to_dicts(messages)
-    final_messages = ([{"role": "system", "content": system_prompt}] + safe_messages) if system_prompt else safe_messages
+    
+    # 1️⃣ 清理 messages，只保留 role + content 且 content 非空
+    safe_messages = []
+    for m in _messages_to_dicts(messages):
+        if m.get("role") in ("user", "assistant") and m.get("content"):
+            safe_messages.append({"role": m["role"], "content": m["content"]})
 
-    # 使用指定的 base_url 和 api_key，否则使用默认值
+    # system_prompt 只在第一条加入
+    final_messages = [{"role": "system", "content": system_prompt}] + safe_messages if system_prompt else safe_messages
+
     url = (base_url or QWEN_BASE_URL).rstrip("/") + "/chat/completions"
     key = api_key or API_KEY
-    
+
+    payload = {
+        "model": model or QWEN_MODEL,
+        "messages": final_messages,
+        **kwargs
+    }
+
+    # 流式输出
+    if stream:
+        payload["stream"] = True
+
+        def stream_generator() -> Iterator[str]:
+            tokens = 0
+            response = None
+            try:
+                response = requests.post(
+                    url,
+                    headers={
+                        "Authorization": f"Bearer {key}",
+                        "Content-Type": "application/json"
+                    },
+                    json=payload,
+                    timeout=60,
+                    stream=True
+                )
+                response.raise_for_status()
+
+                for line in response.iter_lines():
+                    if not line:
+                        continue
+                    decoded_line = line.decode("utf-8").strip()
+                    if decoded_line.startswith("data:"):
+                        content = decoded_line[5:].strip()
+                        if content == "[DONE]":
+                            break
+                        # ✅ 返回原始 chunk
+                        yield content
+
+                        # 可选：统计 token
+                        try:
+                            chunk = json.loads(content)
+                            if chunk.get("usage"):
+                                tokens = chunk["usage"].get("total_tokens", 0)
+                        except Exception:
+                            pass
+
+            except requests.exceptions.RequestException as e:
+                if ENABLE_VERBOSE_LOGGING:
+                    traceback.print_exc()
+                yield json.dumps({"error": "API_ERROR", "message": str(e)}, ensure_ascii=False)
+
+            finally:
+                if response is not None:
+                    response.close()
+                duration = time.time() - start_time
+                perf_monitor.record_llm_call(purpose, duration, tokens)
+
+        return stream_generator()
+
+    # 非流式调用
     try:
         response = requests.post(
             url,
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": model or QWEN_MODEL, "messages": final_messages, **kwargs},
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
             timeout=45
         )
         response.raise_for_status()
         result = response.json()
-        
-        # 记录性能
         duration = time.time() - start_time
         tokens = result.get("usage", {}).get("total_tokens", 0)
         perf_monitor.record_llm_call(purpose, duration, tokens)
-        
         return result['choices'][0]['message']['content']
+
     except requests.exceptions.RequestException as e:
         duration = time.time() - start_time
         perf_monitor.record_llm_call(f"{purpose}_ERROR", duration)
         if ENABLE_VERBOSE_LOGGING:
             traceback.print_exc()
-        return json.dumps({"error": "API_ERROR", "message": str(e)})
+        return json.dumps({"error": "API_ERROR", "message": str(e)}, ensure_ascii=False)
 
-# --- Graph Nodes ---
+
 
 @monitor_performance("prepare_input")
 def node_prepare_input(state: ChatState) -> Dict[str, Any]:
@@ -737,111 +812,120 @@ def run_chat(
     user_id: Optional[str] = None,
     init_messages: Optional[List[Dict]] = None,
     enable_grounding: Optional[bool] = None,
-    enable_suggestions: Optional[bool] = None,
-    return_performance: bool = False
-) -> Dict[str, Any]:
+    enable_suggestions: Optional[bool] = None
+) -> Iterator[Dict[str, Any]]:
     """
-    Main function to run the conversational agent.
-    
-    Args:
-        query: 用户问题
-        user_id: 用户 ID
-        init_messages: 初始消息列表
-        enable_grounding: 是否启用 grounding check（None 使用默认配置）
-        enable_suggestions: 是否启用建议问题（None 使用默认配置）
-        return_performance: 是否返回性能报告
-    
-    Returns:
-        包含答案和性能报告的字典
+    主流式对话函数：接入 Qwen 模型流式输出版本。
+    保留原逻辑结构，直接适配 call_qwen_sync(..., stream=True)。
+
+    Yields:
+        {"type": "token"|"history"|"error"|"end", "data": ...}
     """
-    # 生成会话 ID
     session_id = f"{user_id or 'anonymous'}_{int(time.time() * 1000)}"
     perf_monitor.start_session(session_id)
-    
+
     initial_state: Dict[str, Any] = {
         "query": query,
         "user_id": user_id,
         "messages": init_messages if init_messages else [],
-        "route": None,
-        "tool_name": None,
-        "tool_args": None,
-        "tool_call_id": None,
-        "retrieved": None,
-        "answer": None,
-        "is_grounded": None,
-        "final_output": None,
-        "memory": None,
         "enable_grounding": enable_grounding if enable_grounding is not None else ENABLE_GROUNDING_CHECK,
         "enable_suggestions": enable_suggestions if enable_suggestions is not None else ENABLE_SUGGESTIONS
     }
 
     try:
         if ENABLE_VERBOSE_LOGGING:
-            print("=" * 80)
-            print(f"🚀 SESSION: {session_id}")
+            print(f"🚀 STREAMING SESSION: {session_id}")
             print(f"❓ QUERY: {query}")
-            print("=" * 80)
-        
-        final_state = compiled_graph.invoke(initial_state)
-        
-        # 获取性能报告
-        perf_report = perf_monitor.end_session()
-        
-        if ENABLE_VERBOSE_LOGGING:
-            print("=" * 80)
-            print("✅ SESSION COMPLETED")
-            print(f"⏱️  Total time: {perf_report['total_time']:.3f}s")
-            print(f"🔄 LLM calls: {perf_report['llm_stats']['total_calls']}")
-            print(f"🎯 Tokens: {perf_report['llm_stats']['total_tokens']}")
-            print("=" * 80)
-        
-        # 刷新内存缓存到磁盘
-        memory_cache.flush()
-        
-        # 转换结果
-        final_state = _deep_convert_langchain(final_state)
-        output = final_state.get("final_output", {}) if isinstance(final_state, dict) else {}
-        
-        if not isinstance(output, dict):
-            if isinstance(output, list) and output and isinstance(output[0], dict):
-                output = output[0]
-            else:
-                output = {}
 
-        if not output or (isinstance(output, dict) and "error" in output):
-            result = {
-                "error": output.get("error", "Graph execution failed") if isinstance(output, dict) else "Graph execution failed",
-                "answer": RESPONSE_TEMPLATES.get("error_api")
-            }
-        else:
-            result = {
-                **output,
-                "messages": _messages_to_dicts(final_state.get("messages", initial_state["messages"])),
-                "use_rag": (output.get("route_decision") == "retrieve_rag"),
-                "memory": final_state.get("memory")
-            }
+        # 构造上下文消息
+        messages = initial_state["messages"] + [{"role": "user", "content": query}]
         
-        # 添加性能报告
-        if return_performance:
-            result["performance"] = perf_report
+        # ===== 调用 Qwen 模型流式输出 =====
+        final_answer = ""
+        stream_generator = call_qwen_sync(
+            messages=messages,
+            stream=True,           # 启用流式输出
+            model="qwen-plus",     # Qwen 模型
+            purpose="chat",
+        )
+
+        for chunk in stream_generator:
+            # chunk 通常为字节流或字符串，每行一个 JSON
+            if isinstance(chunk, bytes):
+                chunk = chunk.decode("utf-8", errors="ignore")
+            elif not isinstance(chunk, str):
+                chunk = str(chunk)
+
+            for line in chunk.strip().splitlines():
+                if not line.strip():
+                    continue
+                try:
+                    data = json.loads(line)
+                    delta = data.get("choices", [{}])[0].get("delta", {})
+                    text = delta.get("content", "")
+                    if text:
+                        final_answer += text
+                        yield {"type": "token", "data": text}
+                except Exception:
+                    continue
         
-        return result
+        # ===== 流结束后，输出完整对话历史 =====
+        final_history = messages + [{"role": "assistant", "content": final_answer}]
+        yield {"type": "history", "data": final_history}
 
     except Exception as e:
-        perf_report = perf_monitor.end_session()
+        tb = traceback.format_exc()
         if ENABLE_VERBOSE_LOGGING:
-            traceback.print_exc()
-        
-        result = {
-            "error": str(e),
-            "answer": RESPONSE_TEMPLATES.get("error_api"),
-            "trace": traceback.format_exc()
-        }
-        
-        if return_performance:
-            result["performance"] = perf_report
-        
-        return result
+            print(f"❌ Error during stream: {e}\n{tb}")
+        yield {"type": "error", "data": {"message": str(e), "trace": tb}}
+
+    finally:
+        if ENABLE_VERBOSE_LOGGING:
+            print("✅ STREAMING SESSION COMPLETED")
+        perf_monitor.end_session()
+        memory_cache.flush()
+        yield {"type": "end", "data": "Stream finished."}
+
+
+# Helper function to convert messages (if not already dicts)
+def _messages_to_dicts(messages):
+    if not messages:
+        return []
+    if isinstance(messages[0], dict):
+        return messages
+    
+    dict_messages = []
+    for msg in messages:
+        if hasattr(msg, 'type') and hasattr(msg, 'content'):
+            if msg.type == 'human':
+                dict_messages.append({'user': msg.content})
+            elif msg.type == 'ai':
+                dict_messages.append({'bot': msg.content})
+    return dict_messages
+
+# Helper function to serialize docs (you already have this)
+def _serialize_docs(docs):
+    out = []
+    for d in docs:
+        try:
+            # Assuming 'd' is a Document object with page_content and metadata
+            meta = d.metadata if hasattr(d, 'metadata') else {}
+            code = meta.get("course_code") or meta.get("CourseCode") or meta.get("assoc_code") or ""
+            source_file = meta.get("source_file") or meta.get("source") or "unknown"
+            preview = (d.page_content or "")[:400]
+            
+            # Score might not be present in all retrievers
+            score = meta.get("relevance_score") or meta.get("_score") 
+            
+            out.append({
+                "course_code": code,
+                "source_file": source_file,
+                "score": float(score) if score is not None else None,
+                "preview": preview
+            })
+        except Exception:
+            continue
+    return out
 
 # --- Performance Analysis ---
 
