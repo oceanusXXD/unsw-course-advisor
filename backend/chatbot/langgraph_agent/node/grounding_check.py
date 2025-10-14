@@ -4,6 +4,7 @@ from typing import Dict, Any
 from core import ENABLE_GROUNDING_CHECK, ENABLE_VERBOSE_LOGGING, call_qwen_sync, GROUNDING_MODEL, RESPONSE_TEMPLATES
 
 def node_grounding_check(state: Dict[str, Any]) -> Dict[str, Any]:
+    print("!!!!!!!!!!!!!!state in grounding_check:", state)
     if not state.get("enable_grounding", ENABLE_GROUNDING_CHECK):
         if ENABLE_VERBOSE_LOGGING:
             print("⏭️  GROUNDING CHECK: Disabled")

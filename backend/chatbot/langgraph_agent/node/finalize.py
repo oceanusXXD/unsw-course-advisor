@@ -1,32 +1,43 @@
 # ./node/finalize.py
 import json
 from typing import Dict, Any
-from core import ENABLE_SUGGESTIONS, GROUNDING_MODEL, call_qwen_sync, MAX_MEMORY_MESSAGES
+from core import TOOL_REGISTRY, USE_FAST_ROUTER, ROUTING_MODEL_URL, ROUTING_MODEL_NAME, ROUTING_MODEL_KEY, QWEN_MODEL, ENABLE_VERBOSE_LOGGING, call_qwen_sync
+
+model = QWEN_MODEL
+base_url = ROUTING_MODEL_URL if USE_FAST_ROUTER and ROUTING_MODEL_URL and ROUTING_MODEL_NAME else None
+api_key = ROUTING_MODEL_KEY if USE_FAST_ROUTER and ROUTING_MODEL_KEY else None
+purpose = "generation"
 
 def node_finalize(state: Dict[str, Any]) -> Dict[str, Any]:
-    final_answer = state.get("answer", "抱歉，我无法回答。")
-    is_grounded = state.get("is_grounded", True)
-    route = state.get("route")
-    suggested_questions = []
-    if state.get("enable_suggestions", ENABLE_SUGGESTIONS):
-        try:
-            messages = state.get("messages", [])
-            history_str = "\n".join([f"{m.get('role', 'unknown')}: {m.get('content', '')}" for m in messages[-5:]])
-            prompt = (f"基于以下对话，请生成 2-3 个用户可能感兴趣的相关问题，用于引导对话。请只返回一个JSON列表。\\n\\n### 对话历史 ###\\n{history_str}\\n\\n最终回答: {final_answer[:200]}")
-            suggestions_str = call_qwen_sync([{"role": "user", "content": prompt}], model=GROUNDING_MODEL, temperature=0.5, purpose="suggestions")
-            suggested_questions = json.loads(suggestions_str)
-        except Exception:
-            pass
+    """
+    根据第一轮生成结果以及后续调用结果生成最终答案
+    """
+    messages = state.get("messages", [])
     retrieved = state.get("retrieved") or []
-    sources = [{"title": d.get("title", d.get("course_code", "未知")), "source": d.get("source_file", d.get("url", "未知")), "score": d.get("_score")} for d in retrieved]
-    final_output = {"answer": final_answer, "sources": sources, "suggested_questions": suggested_questions, "route_decision": route, "is_grounded": is_grounded}
-    mem = state.get("memory", {}) or {}
-    current_messages = state.get("messages", [])
-    updated_messages = current_messages + [{"role": "assistant", "content": final_answer}]
-    if len(updated_messages) > MAX_MEMORY_MESSAGES:
-        updated_messages = updated_messages[-MAX_MEMORY_MESSAGES:]
-    mem["history"] = updated_messages
-    if final_answer and any(k in final_answer for k in ["记住", "保存偏好", "我叫", "我的名字"]):
-        current_summary = mem.get("summary", "")
-        mem["summary"] = (current_summary + "\n" + final_answer)[:2000]
-    return {"final_output": final_output, "memory": mem}
+    route = state.get("route")
+
+    system_prompt = ""
+
+    if retrieved:
+        # 构建来源文档摘要
+        context_str = "\n\n".join([
+            f"来源 {i+1}: {doc.get('source_file', '未知')}\n内容: {(doc.get('_text') or doc.get('content') or '')[:500]}"
+            for i, doc in enumerate(retrieved) if doc and (doc.get('_text') or doc.get('content'))
+        ])
+        if context_str:
+            system_prompt = (
+                "你是一个知识型助手。下面是一些参考资料，请根据这些内容回答用户的问题。\n\n"
+                f"{context_str}\n\n"
+                "请确保你的回答基于提供的资料，并在可能的情况下给出来源编号。如果无法从资料中找到答案，可以说明无法确定。"
+            )
+        else:
+            system_prompt = "你是一个知识型助手，请根据已有对话内容回答用户的问题。"
+    elif route == "":
+        system_prompt = "你是一个知识型助手，请根据已有对话内容回答用户问题。"
+    else:
+        system_prompt = "你是一个知识型助手，请根据已有对话内容和路由信息生成回答。"
+
+    # 调用模型生成最终答案
+    answer = call_qwen_sync(messages, system_prompt=system_prompt, temperature=0.2, purpose=purpose)
+
+    return {"final_answer": answer}

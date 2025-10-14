@@ -1,13 +1,19 @@
 # ./node/generate.py
 import json
-from typing import Dict, Any
-from core import call_qwen_sync, GROUNDING_MODEL, ENABLE_VERBOSE_LOGGING, RESPONSE_TEMPLATES
-
+from typing import Dict, Any, Iterator, Union
+from core import TOOL_REGISTRY, USE_FAST_ROUTER, ROUTING_MODEL_URL, ROUTING_MODEL_NAME, ROUTING_MODEL_KEY, QWEN_MODEL, ENABLE_VERBOSE_LOGGING, call_qwen_sync
+model = QWEN_MODEL
+base_url = ROUTING_MODEL_URL if USE_FAST_ROUTER and ROUTING_MODEL_URL and ROUTING_MODEL_NAME else None
+api_key = ROUTING_MODEL_KEY if USE_FAST_ROUTER and ROUTING_MODEL_KEY else None
+purpose = "generation"
 def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
+    """生成答案"""
     messages = state.get("messages", [])
     retrieved = state.get("retrieved") or []
     route = state.get("route")
+    
     system_prompt = "你是一个中立且乐于助人的 AI 助手。请根据对话历史和你的知识来回答。"
+
     if retrieved:
         context_str = "\n\n".join([
             f"来源 {i+1}: {doc.get('source_file', '未知')}\n内容: {(doc.get('_text') or doc.get('content') or '')[:500]}"
@@ -22,10 +28,5 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
         system_prompt = "你是一个友好、乐于助人的 AI 助手。请自然地回答用户的问题，保持对话的连贯性。"
 
     answer = call_qwen_sync(messages, system_prompt=system_prompt, temperature=0.2, purpose="generation")
-    try:
-        answer_json = json.loads(answer)
-        if "error" in answer_json:
-            return {"answer": RESPONSE_TEMPLATES["error_api"]}
-    except Exception:
-        pass
+    print("!!!!!!!!!!!!!!answer in generate:", answer)
     return {"answer": answer}

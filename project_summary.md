@@ -12,6 +12,7 @@
 ---
 ## RAG
 - 用阿里embedding模型以及huggingface上最常用的小模型进行embedding
+- embedding-v4不免费。怒花我0.79元
 - 两个爬取的数据分别做了向量化，然后做了重排和并行检索
 - 优化了chunk
 ---

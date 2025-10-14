@@ -1,38 +1,39 @@
-# nodes_config.yaml
+# nodes_config.yaml (已更新)
 nodes:
   - id: load_memory
-    function: node_impls.node_load_memory
+    function: .node.load_memory.node_load_memory
     monitor: true
   - id: prepare_input
-    function: node_impls.node_prepare_input
+    function: .node.prepare_input.node_prepare_input
     monitor: true
   - id: router
-    function: node_impls.node_router
+    function: .node.router.node_router
     monitor: true
   - id: retrieve
-    function: node_impls.node_retrieve
+    function: .node.retrieve.node_retrieve
     monitor: true
   - id: tool_executor
-    function: node_impls.node_tool_executor
+    function: .node.tool_executor.node_tool_executor
     monitor: true
   - id: plugin_handler
-    function: node_impls.node_plugin_handler
+    function: .node.plugin_handler.node_plugin_handler
     monitor: true
   - id: generate
-    function: node_impls.node_generate
+    function: .node.generate.node_generate
     monitor: true
   - id: grounding_check
-    function: node_impls.node_grounding_check
+    function: .node.grounding_check.node_grounding_check
     monitor: true
-  - id: finalize
-    function: node_impls.node_finalize
-    monitor: true
+  #- id: finalize
+  #  function: .node.finalize.node_finalize
+  #  monitor: true
   - id: save_memory
-    function: node_impls.node_save_memory
+    function: .node.save_memory.node_save_memory
     monitor: true
 
+
 edges:
-  - from: START
+  - from: __START__
     to: load_memory
   - from: load_memory
     to: prepare_input
@@ -59,8 +60,8 @@ edges_extra:
   - from: generate
     to: grounding_check
   - from: grounding_check
-    to: finalize
-  - from: finalize
+  #  to: finalize
+  #- from: finalize
     to: save_memory
   - from: save_memory
-    to: END
+    to: __END__

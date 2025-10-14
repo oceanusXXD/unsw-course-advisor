@@ -21,8 +21,8 @@ from dotenv import load_dotenv
 
 # ---------- 配置（按需修改） ----------
 BASE_DIR = os.path.dirname(__file__)
-FAISS_INDEX_PATH = os.path.join(BASE_DIR, "..", "..", "RAG_database", "vector_store", "faiss_index.bin")
-METADATA_PATH = os.path.join(BASE_DIR, "..", "..", "RAG_database", "vector_store", "metadata.jsonl")
+FAISS_INDEX_PATH = os.path.join(BASE_DIR, "..", "..", "..","RAG_database", "vector_store", "faiss_index.bin")
+METADATA_PATH = os.path.join(BASE_DIR, "..", "..", "..","RAG_database", "vector_store", "metadata.jsonl")
 
 # 是否使用 API（True 使用 百炼/OpenAI 兼容 API；False 使用本地 SentenceTransformer）
 USE_API_EMBEDDING = True

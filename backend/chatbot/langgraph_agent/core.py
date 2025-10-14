@@ -135,13 +135,18 @@ RESPONSE_TEMPLATES = {
 
 # 动态加载 tools 包中的工具（如果可用）
 try:
-    # 相对导入，如果 core.py 在包根，确保 tools 在 sys.path 或为包
-    from tools import get_tools
+    # 尝试包内导入（优先）
+    from .tools import get_tools
     TOOL_REGISTRY = get_tools()
 except Exception:
-    TOOL_REGISTRY = {}
-    if ENABLE_VERBOSE_LOGGING:
-        print("⚠️  Warning: No tools loaded. 'tools' package not found or failed to load.")
+    # 兼容旧路径导入
+    try:
+        from tools import get_tools
+        TOOL_REGISTRY = get_tools()
+    except Exception:
+        TOOL_REGISTRY = {}
+        if ENABLE_VERBOSE_LOGGING:
+            print("⚠️  Warning: No tools loaded. 'tools' package not found or failed to load.")
 
 # --- Chat State Type ---
 class ChatState(TypedDict):
@@ -181,8 +186,9 @@ def call_qwen_sync(messages: list,
                    purpose: str = "general",
                    base_url: Optional[str] = None,
                    api_key: Optional[str] = None,
-                   stream: bool = False,
+                   stream: bool = True,
                    **kwargs) -> Union[str, Iterator[str]]:
+    print("!!!!!!!!!!!!!!messages in call_qwen_sync:", messages)
     start_time = time.time()
     safe_messages = []
     for m in _messages_to_dicts(messages):
@@ -238,11 +244,13 @@ def call_qwen_sync(messages: list,
             json=payload,
             timeout=45
         )
+        
         response.raise_for_status()
         result = response.json()
         duration = time.time() - start_time
         tokens = result.get("usage", {}).get("total_tokens", 0)
         perf_monitor.record_llm_call(purpose, duration, tokens)
+        print("!!!!!!!!!!!!!!result in call_qwen_sync:", result)
         return result['choices'][0]['message']['content']
     except requests.exceptions.RequestException as e:
         duration = time.time() - start_time
