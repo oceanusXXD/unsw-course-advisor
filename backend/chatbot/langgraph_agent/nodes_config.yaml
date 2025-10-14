@@ -1,0 +1,66 @@
+# nodes_config.yaml
+nodes:
+  - id: load_memory
+    function: node_impls.node_load_memory
+    monitor: true
+  - id: prepare_input
+    function: node_impls.node_prepare_input
+    monitor: true
+  - id: router
+    function: node_impls.node_router
+    monitor: true
+  - id: retrieve
+    function: node_impls.node_retrieve
+    monitor: true
+  - id: tool_executor
+    function: node_impls.node_tool_executor
+    monitor: true
+  - id: plugin_handler
+    function: node_impls.node_plugin_handler
+    monitor: true
+  - id: generate
+    function: node_impls.node_generate
+    monitor: true
+  - id: grounding_check
+    function: node_impls.node_grounding_check
+    monitor: true
+  - id: finalize
+    function: node_impls.node_finalize
+    monitor: true
+  - id: save_memory
+    function: node_impls.node_save_memory
+    monitor: true
+
+edges:
+  - from: START
+    to: load_memory
+  - from: load_memory
+    to: prepare_input
+  - from: prepare_input
+    to: router
+
+conditional_edges:
+  router:
+    key: route
+    mapping:
+      retrieve_rag: retrieve
+      call_tool: tool_executor
+      plugin_handler: plugin_handler
+      general_chat: generate
+      needs_clarification: generate
+
+edges_extra:
+  - from: retrieve
+    to: generate
+  - from: tool_executor
+    to: router
+  - from: plugin_handler
+    to: generate
+  - from: generate
+    to: grounding_check
+  - from: grounding_check
+    to: finalize
+  - from: finalize
+    to: save_memory
+  - from: save_memory
+    to: END

@@ -4,46 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import os
 import traceback
-from . import langgraph_chat
-# 优先导入 langgraph_integration（若存在），否则回退到 rag_chain_qwen
-try:
-    from . import langgraph_integration as langgraph  # langgraph.run_chat(query) -> 返回 state dict
-    _HAS_LANGGRAPH = True
-except Exception:
-    langgraph = None
-    _HAS_LANGGRAPH = False
-
-from . import rag_chain_qwen as rag  # 相对导入，根据你的目录结构调整
-
-# ====== 辅助：序列化检索结果 ======
-def _serialize_docs(docs):
-    """
-    将检索到的 docs 做成 JSON 可序列化的简洁列表，
-    字段：course_code / source_file / score / preview（优先用 _content）
-    """
-    out = []
-    for d in docs:
-        try:
-            code = d.get("course_code") or d.get("CourseCode") or d.get("assoc_code") or ""
-            # 优先使用 source_file 字段
-            source_file = d.get("source_file") or d.get("source") or "unknown"
-            score = d.get("_score", None)
-            # 优先使用 _content，再用 _text、overview 等做 preview
-            preview = (d.get("_content") or d.get("_text") or d.get("content") or d.get("overview") or "")[:400]
-            out.append({
-                "course_code": code,
-                "source_file": source_file,
-                "score": float(score) if score is not None else None,
-                "preview": preview
-            })
-        except Exception:
-            continue
-    return out
-
-# ====== 非流式 Chat API ======
-@csrf_exempt
-def chat(request):
-    return JsonResponse({"error": "This endpoint is deprecated. Use /chat_multiround/ instead."}, status=410)
+from . import langgraph_agent
+from .langgraph_agent.main_graph import run_chat
 
 @csrf_exempt
 def chat_multiround(request):
@@ -80,7 +42,7 @@ def chat_multiround(request):
                         init_messages.append({"type": "ai", "content": turn["bot"]})
 
                 # Call the new streaming function from langgraph_chat
-                for event in langgraph_chat.run_chat(query, init_messages=init_messages):
+                for event in langgraph_agent.main_graph.run_chat(query, init_messages=init_messages):
                     # Format as a Server-Sent Event (SSE)
                     json_event = json.dumps(event, ensure_ascii=False)
                     sse_message = f"data: {json_event}\n\n"
