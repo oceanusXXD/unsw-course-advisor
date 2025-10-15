@@ -1,6 +1,6 @@
 # UNSW 课程顾问 🤖🎓
 
-[English](./README_EN.md) | [Deutsch](COMING SOON) | [日本語](COMING SOON) | [Español](COMING SOON)
+[English](./document/README_EN.md) | [Deutsch](COMING SOON) | [日本語](COMING SOON) | [Español](COMING SOON)
 
 ---
 
@@ -49,7 +49,7 @@
 -   `ops/`：包含Docker配置文件和自动化部署脚本。
 
 #### 架构图
-![系统架构](./structure.png)
+![系统架构](./document/structure.png)
 
 ---
 
@@ -63,7 +63,7 @@
 #### 安装与运行
 1.  **克隆仓库**
     ```bash
-    git clone [https://github.com/your-username/unsw-course-advisor.git](https://github.com/your-username/unsw-course-advisor.git)
+    git clone https://github.com/your-username/unsw-course-advisor.git
     cd unsw-course-advisor
     ```
 
@@ -90,14 +90,15 @@
     cd backend/
     python manage.py runserver
     ```
-    *服务将默认运行在 `http://127.0.0.1:8000/`*
+    *服务将默认运行在 `http://localhost:8000/`*
 
-5.  **启动前端Streamlit界面**
+5.  **启动前端React界面**
     ```bash
     cd frontend/
-    streamlit run app.py
+    npm install
+    npm run dev
     ```
-    *现在你可以在浏览器中访问 `http://localhost:8501` 来与应用交互。*
+    *现在你可以在浏览器中访问 `http://localhost:5713` 来与应用交互。*
 
 ---
 
@@ -112,9 +113,9 @@
 -   [✔] **流式输出**：优化聊天机器人交互，实现打字机般的实时响应体验。
 -   [ ] **Chrome插件**：实现课程规划和一键选课/Enroll功能。
 -   [ ] **向量化与分块优化**：持续优化RAG检索的效果及速度。
--   [ ] **A/B测试框架**：用于科学地优化提示词策略和检索模型。
+-   [✔] **React前端重构**：将前端改成React
 -   [ ] **语义聚类**：自动识别内容重复或高度相似的课程。
--   [ ] **架构升级**：引入RPC/Redis等组件优化系统性能和用户体验，探索SaaS/PaaS部署模式。
+-   [ ] **架构升级**：引入RPC优化系统性能和用户体验，探索SaaS/PaaS部署模式。
 
 ---
 
