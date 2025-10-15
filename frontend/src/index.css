@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html, body, #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-[#0a0a0a] text-[#e5e5e5] antialiased;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.08);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+@layer components {
+  .markdown p {
+    @apply leading-7 text-[#e5e5e5];
+  }
+  .markdown code {
+    @apply bg-[#1a1a1a] px-1.5 py-0.5 rounded text-sm;
+  }
+  .markdown pre {
+    @apply bg-[#1a1a1a] p-4 rounded-md overflow-auto text-sm;
+  }
+  .markdown a {
+    @apply text-blue-500 hover:underline;
+  }
+  .markdown ul, .markdown ol {
+    @apply ml-5 my-3 list-disc;
+  }
+  .markdown h1, .markdown h2, .markdown h3 {
+    @apply font-semibold mt-6 mb-2;
+  }
+  .markdown h1 {
+    @apply text-3xl;
+  }
+}
