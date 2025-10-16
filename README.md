@@ -138,4 +138,4 @@
 ---
 
 ### 📄 许可证
-本项目基于 **MIT许可证** 进行分发。详情请查阅 `LICENSE` 文件。
+本项目基于 **GNU General Public License v3.0许可证** 进行分发。详情请查阅 `LICENSE` 文件。
