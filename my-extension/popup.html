@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>API Runner</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <h3>API Runner</h3>
+
+        <section>
+            <label>上传 / 粘贴 加密包（JSON）:</label>
+            <textarea id="encryptedInput"
+                placeholder='在此粘贴后端生成的加密 JSON（或从 templates/encrypted_template.json 复制）'></textarea>
+            <div class="row">
+                <input id="passphrase" type="password" placeholder="若使用 passphrase 解密，则输入（可留空用于 PLAIN）" />
+                <button id="decryptBtn">解密并保存</button>
+            </div>
+            <div class="row">
+                <button id="importTemplateBtn">加载示例模板 (templates/encrypted_template.json)</button>
+                <button id="clearEncryptedBtn">清空加密包输入</button>
+            </div>
+        </section>
+
+        <section>
+            <label>API 列表（勾选要运行的 API）:</label>
+            <div id="apiList" class="api-list"></div>
+            <label class="small"><input id="injectOnLoad" type="checkbox" /> 在匹配页面加载时自动执行所选 API</label>
+            <div class="row">
+                <button id="runBtn">在当前标签页触发请求</button>
+                <button id="wipeBtn">清除已解密数据</button>
+            </div>
+        </section>
+
+        <section>
+            <label>响应 / 日志：</label>
+            <pre id="logArea">（空）</pre>
+            <div class="row">
+                <button id="downloadParamsBtn">导出已解密参数（JSON）</button>
+                <button id="clearLogsBtn">清空日志</button>
+            </div>
+        </section>
+
+        <footer>
+            <small>默认仅在本地运行；发布前请检查隐私/用户授权说明。</small>
+        </footer>
+    </div>
+
+    <script type="module" src="popup.js"></script>
+</body>
+
+</html>
