@@ -26,6 +26,7 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
 1. `retrieve_rag`: 当用户询问课程的具体信息，如先修课程、学分、课程代码、教学大纲(syllabus)等。
 2. `call_tool`: 当用户意图可以通过调用工具来完成时，特别是以下情况：
    - 用户明确要求"安装插件"、"添加功能"或使用类似表述（使用 plugin_install 工具）
+   - 用户明确要求"帮我选课"，"生成选课结果"等（使用 generate_selection 工具）
    - 用户请求可以通过其他工具完成的任务
 3. `general_chat`: 对于其他所有问题，如问候、常识性问题、自我介绍等。
 

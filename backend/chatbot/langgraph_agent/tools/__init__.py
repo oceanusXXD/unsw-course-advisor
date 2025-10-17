@@ -7,8 +7,10 @@ tools package
 
 from .get_course_instructor import get_course_instructor
 from .fetch_url import fetch_url
+from .generate_selection import generate_selection
 from .wikipedia_search import wiki_search
 from .plugin_installer import plugin_install
+
 
 def get_tools():
     return {
@@ -31,5 +33,10 @@ def get_tools():
             "function": plugin_install,
             "description": "安装插件",
             "args": {}
-        }
+        },
+        "generate_selection": {
+            "function": generate_selection,
+            "description": "生成选课结果（不加密），返回键为 'data' 以供后续 crypto 节点读取并加密。",
+            "args": {}
+        },
     }
