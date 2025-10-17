@@ -1,4 +1,3 @@
-# tools/__init__.py
 """
 tools package
 
@@ -9,6 +8,7 @@ tools package
 from .get_course_instructor import get_course_instructor
 from .fetch_url import fetch_url
 from .wikipedia_search import wiki_search
+from .plugin_installer import plugin_install
 
 def get_tools():
     return {
@@ -26,5 +26,10 @@ def get_tools():
             "function": wiki_search,
             "description": "在维基百科搜索并返回前几条条目标题（需要网络）。",
             "args": {"query": "string", "top_k": "int (可选，默认3)"}
+        },
+        "plugin_install": {
+            "function": plugin_install,
+            "description": "安装插件",
+            "args": {}
         }
     }

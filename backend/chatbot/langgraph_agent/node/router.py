@@ -1,4 +1,3 @@
-# ./node/router.py
 import json, uuid
 from typing import Dict, Any, Iterator
 from core import TOOL_REGISTRY, USE_FAST_ROUTER, ROUTING_MODEL_URL, ROUTING_MODEL_NAME, ROUTING_MODEL_KEY, QWEN_MODEL, ENABLE_VERBOSE_LOGGING, call_qwen_sync
@@ -10,6 +9,14 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     print("!!!!!!!!!!!!!!state in router:", state)
     query = state.get("query", "")
+    
+    # 添加插件安装工具定义（无参数版本）
+    if "plugin_install" not in TOOL_REGISTRY:
+        TOOL_REGISTRY["plugin_install"] = {
+            "description": "当用户明确要求安装、更新或添加系统插件时使用此工具（无需参数）",
+            "args": {}  # 空字典表示不需要参数
+        }
+
     tool_definitions = json.dumps([
         {"name": name, "description": details["description"], "args": details["args"]}
         for name, details in TOOL_REGISTRY.items()
@@ -17,8 +24,17 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
 
     prompt = f"""你是一个智能路由机器人。根据用户的问题，决定下一步的最佳行动。可用的行动如下：
 1. `retrieve_rag`: 当用户询问课程的具体信息，如先修课程、学分、课程代码、教学大纲(syllabus)等。
-2. `call_tool`: 当用户意图可以通过调用工具来完成时。
+2. `call_tool`: 当用户意图可以通过调用工具来完成时，特别是以下情况：
+   - 用户明确要求"安装插件"、"添加功能"或使用类似表述（使用 plugin_install 工具）
+   - 用户请求可以通过其他工具完成的任务
 3. `general_chat`: 对于其他所有问题，如问候、常识性问题、自我介绍等。
+
+特别注意：当用户使用以下任何表述时，必须选择 call_tool 并使用 plugin_install 工具：
+- "安装插件"
+- "install plugin"
+- "plugin install"
+- "添加插件"
+- "add plugin"
 
 可用的工具如下:
 {tool_definitions}
@@ -27,7 +43,8 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
 
 请只返回一个JSON对象，格式如下:
 - 如果选择 `retrieve_rag` 或 `general_chat`，返回: {{\"route\": \"行动名称\"}}
-- 如果选择 `call_tool`，返回: {{\"route\": \"call_tool\", \"tool_name\": \"工具名称\", \"tool_args\": {{\"参数1\": \"值1\", ...}}}}
+- 如果选择 `call_tool`，返回: {{\"route\": \"call_tool\", \"tool_name\": \"工具名称\"}}
+  - 特别注意：plugin_install 工具不需要 tool_args 参数
 """
 
     try:
@@ -56,6 +73,10 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
         route = decision.get("route")
         if route == "call_tool":
             decision["tool_call_id"] = f"call_{uuid.uuid4().hex[:16]}"
+            # 如果是安装插件调用，确保没有tool_args
+            if decision.get("tool_name") == "plugin_install":
+                decision.pop("tool_args", None)  # 移除可能存在的tool_args
+                decision["is_plugin_installation"] = True
         if ENABLE_VERBOSE_LOGGING:
             print(f"🧭 ROUTE: {route}")
         return decision

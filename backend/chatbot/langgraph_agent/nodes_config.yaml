@@ -1,4 +1,3 @@
-# nodes_config.yaml (已更新)
 nodes:
   - id: load_memory
     function: .node.load_memory.node_load_memory
@@ -15,22 +14,15 @@ nodes:
   - id: tool_executor
     function: .node.tool_executor.node_tool_executor
     monitor: true
-  - id: plugin_handler
-    function: .node.plugin_handler.node_plugin_handler
-    monitor: true
   - id: generate
     function: .node.generate.node_generate
     monitor: true
   - id: grounding_check
     function: .node.grounding_check.node_grounding_check
     monitor: true
-  #- id: finalize
-  #  function: .node.finalize.node_finalize
-  #  monitor: true
   - id: save_memory
     function: .node.save_memory.node_save_memory
     monitor: true
-
 
 edges:
   - from: __START__
@@ -40,13 +32,13 @@ edges:
   - from: prepare_input
     to: router
 
+
 conditional_edges:
   router:
     key: route
     mapping:
       retrieve_rag: retrieve
       call_tool: tool_executor
-      plugin_handler: plugin_handler
       general_chat: generate
       needs_clarification: generate
 
@@ -54,14 +46,10 @@ edges_extra:
   - from: retrieve
     to: generate
   - from: tool_executor
-    to: router
-  - from: plugin_handler
     to: generate
   - from: generate
     to: grounding_check
   - from: grounding_check
-  #  to: finalize
-  #- from: finalize
     to: save_memory
   - from: save_memory
     to: __END__
