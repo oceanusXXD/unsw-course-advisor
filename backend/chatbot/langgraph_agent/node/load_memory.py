@@ -13,7 +13,7 @@ def node_load_memory(state: Dict[str, Any]) -> Dict[str, Any]:
     - 返回 {"memory": memory_dict}
     """
     if ENABLE_VERBOSE_LOGGING:
-        print("!!!!!!!!!!!!!!state in load_memory:", state)
+        print("!!!!!!!!!!!!!!state in load_memory:")
     user_id = state.get("user_id", "anonymous")
     memory_path = os.path.join(MEMORY_DIR, f"{user_id}.json")
     memory = {}

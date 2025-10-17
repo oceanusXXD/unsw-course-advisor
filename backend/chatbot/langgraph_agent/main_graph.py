@@ -214,7 +214,7 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
                     "is_grounded": result.get("is_grounded", True),
                 }
                 if ENABLE_VERBOSE_LOGGING:
-                    print("🟢 Calling node_save_memory with state:", {k: (v if k != "answer" else v[:100] + ("..." if len(v) > 100 else "")) for k,v in state_for_save.items()})
+                    print("🟢 Calling node_save_memory with state:")
                 try:
                     node_save_memory(state_for_save)
                     if ENABLE_VERBOSE_LOGGING:

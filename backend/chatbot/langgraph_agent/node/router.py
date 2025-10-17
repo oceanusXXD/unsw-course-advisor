@@ -65,10 +65,10 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
         print("!!!!!!!!!!!!!!answer_or_generator:", answer_or_generator)
         response_str = answer_or_generator  # 一次性输出
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!!!!!!response_str:", response_str)
+            print("!!!!!!!!!!!!!!response_str:")
         decision = json.loads(response_str)
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!!!!!!decision:", decision)
+            print("!!!!!!!!!!!!!!decision:")
 
         route = decision.get("route")
         if route == "call_tool":

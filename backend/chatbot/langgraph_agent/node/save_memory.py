@@ -16,7 +16,8 @@ def node_save_memory(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     try:
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!!!!!!state in save_memory:", state)
+            pass
+            print("!!!!!!!!!!!!!!state in save_memory:")
     except Exception:
         print("!!!!!!!!!!!!!!state in save_memory: <logging failed>")
 
@@ -184,7 +185,7 @@ def node_save_memory(state: Dict[str, Any]) -> Dict[str, Any]:
         if ENABLE_VERBOSE_LOGGING and len(preview) > 1000:
             preview = preview[:1000] + " ...(truncated)"
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!!!!!!serializable_memory preview:", preview)
+            print("!!!!!!!!!!!!!!serializable_memory preview:")
 
         with tempfile.NamedTemporaryFile("w", delete=False, dir=MEMORY_DIR, encoding="utf-8") as tf:
             json.dump(serializable_memory, tf, ensure_ascii=False, indent=2)
