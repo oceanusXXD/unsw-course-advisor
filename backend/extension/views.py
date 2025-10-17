@@ -89,6 +89,7 @@ def _wait_page_flag(driver: webdriver.Chrome, timeout=INJECT_TIMEOUT):
     return {"ok": False, "state": last_state}
 
 @require_GET
+@require_GET
 def launch_and_check_extension(request):
     result = { "status": "error", "detail": None, "browser_logs": None, "opened_url": None }
     driver = None
@@ -100,7 +101,7 @@ def launch_and_check_extension(request):
         chrome_opts.add_argument("--profile-directory=Default")
         chrome_opts.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_opts.add_experimental_option("prefs", {"extensions": {"dev_mode": True}})
-        
+
         driver = webdriver.Chrome(options=chrome_opts)
         time.sleep(LAUNCH_WAIT_SEC)
 
@@ -127,11 +128,22 @@ def launch_and_check_extension(request):
         time.sleep(0.5)
         pyautogui.press('enter')
 
+        # 等待插件安装后检测
         time.sleep(5)
         ext_id = _get_extension_id_via_extensions_page(driver, TARGET_EXTENSION_NAME)
+
         if not ext_id:
             raise RuntimeError("安装后，无法在 chrome://extensions 页面上找到插件。")
-        
+
+        # ✅ 修改部分：如果能找到插件，就认为安装成功，直接返回
+        result["status"] = "ok"
+        result["detail"] = {"extension_id": ext_id, "message": f"插件 {TARGET_EXTENSION_NAME} 安装成功"}
+        result["browser_logs"] = _dump_browser_logs(driver)
+
+        # ✅ 不再打开内部页面
+        return JsonResponse(result, json_dumps_params={'ensure_ascii': False, 'indent': 2})
+
+        # （下面原逻辑保留但不会执行）
         target_url = f"chrome-extension://{ext_id}/{EXTENSION_INTERNAL_PAGE}"
         driver.get(target_url)
         result["opened_url"] = target_url
