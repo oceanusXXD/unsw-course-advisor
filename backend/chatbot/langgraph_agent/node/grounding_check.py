@@ -10,7 +10,7 @@ def node_grounding_check(state: Dict[str, Any], force_check: bool = False) -> Di
     """
     Grounding 检查，只针对最新 tool_message 或 answer，忽略历史 memory
     """
-    print("!!!!!!!!!!!!!!state in grounding_check:", state)
+    print("!!!!!!!!!!!!!!state in grounding_check:")
 
     if not state.get("enable_grounding", ENABLE_GROUNDING_CHECK):
         if ENABLE_VERBOSE_LOGGING:

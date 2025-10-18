@@ -119,17 +119,17 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
             "run_id": time.time(),  # 保证每次唯一
         }
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!!!!!!inputs:", inputs)
+            print("!!!!!!!!!!!!!!inputs:")
 
         # 调用编译后的图
         result = compiled.invoke(inputs)
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!!!!!!result:", result)
+            print("!!!!!!!!!!!!!!result:")
 
         final_answer = ""
         output_stream = result.get("answer")
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!output_stream:", output_stream)
+            print("!!!!!!!!!output_stream:")
 
         # 如果 answer 是 generator/iterable，则逐步读取并 yield token
         # 兼容几种 chunk 类型：bytes / str / dict-like(JSON line)

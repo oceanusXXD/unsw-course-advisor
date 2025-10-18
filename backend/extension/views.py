@@ -8,7 +8,8 @@ from pathlib import Path
 import pyautogui
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -89,7 +90,6 @@ def _wait_page_flag(driver: webdriver.Chrome, timeout=INJECT_TIMEOUT):
     return {"ok": False, "state": last_state}
 
 @require_GET
-@require_GET
 def launch_and_check_extension(request):
     result = { "status": "error", "detail": None, "browser_logs": None, "opened_url": None }
     driver = None
@@ -164,3 +164,5 @@ def launch_and_check_extension(request):
             result["browser_logs"] = _dump_browser_logs(driver)
 
     return JsonResponse(result, json_dumps_params={'ensure_ascii': False, 'indent': 2})
+
+

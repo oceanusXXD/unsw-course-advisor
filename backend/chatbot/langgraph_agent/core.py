@@ -250,7 +250,7 @@ def call_qwen_sync(messages: list,
         duration = time.time() - start_time
         tokens = result.get("usage", {}).get("total_tokens", 0)
         perf_monitor.record_llm_call(purpose, duration, tokens)
-        print("!!!!!!!!!!!!!!result in call_qwen_sync:", result)
+        #print("!!!!!!!!!!!!!!result in call_qwen_sync:", result)
         return result['choices'][0]['message']['content']
     except requests.exceptions.RequestException as e:
         duration = time.time() - start_time

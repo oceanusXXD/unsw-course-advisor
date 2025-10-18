@@ -7,7 +7,7 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
     根据用户问题进行路由决策。
     每次迭代返回增量 JSON 字符串（与node_generate类似）。
     """
-    print("!!!!!!!!!!!!!!state in router:", state)
+    print("!!!!!!!!!!!!!!state in router:",state)
     query = state.get("query", "")
     
     # 添加插件安装工具定义（无参数版本）
@@ -63,13 +63,13 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
             purpose=purpose,
             stream=False  # 一次性返回完整答案
         )
-        print("!!!!!!!!!!!!!!answer_or_generator:", answer_or_generator)
+        print("!!!!!!!!!!!!!!answer_or_generator:")
         response_str = answer_or_generator  # 一次性输出
         if ENABLE_VERBOSE_LOGGING:
             print("!!!!!!!!!!!!!!response_str:")
         decision = json.loads(response_str)
         if ENABLE_VERBOSE_LOGGING:
-            print("!!!!!!!!!!!!!!decision:")
+            print("!!!!!!!!!!!!!!decision:",decision)
 
         route = decision.get("route")
         if route == "call_tool":

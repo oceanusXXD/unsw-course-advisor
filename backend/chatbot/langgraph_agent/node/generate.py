@@ -127,6 +127,6 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
     answer = call_qwen_sync(messages, system_prompt=system_prompt, temperature=0.2, purpose=purpose)
 
     if ENABLE_VERBOSE_LOGGING:
-        print("!!!!!!!!!!!!!!answer in generate:", answer)
+        print("!!!!!!!!!!!!!!answer in generate:")
 
     return {"answer": answer}
