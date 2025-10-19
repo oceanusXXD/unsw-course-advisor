@@ -24,6 +24,7 @@ from .models import User
 from .serializers import RegisterSerializer, LoginSerializer, LicenseActivateSerializer
 from chatbot.langgraph_agent.tools import crypto
 from dotenv import load_dotenv
+from services import CryptoService
 # 加载环境变量
 load_dotenv()
 
@@ -71,15 +72,6 @@ def get_tokens_for_user(user):
         logger.error(f"Token generation failed for user {getattr(user, 'email', user)}: {str(e)}", exc_info=True)
         raise
 
-def _derive_user_key(server_master_key: bytes, user_identifier: str) -> bytes:
-    """
-    基于服务器主密钥与user_identifier派生user_key
-    PBKDF2(server_master_key, salt=user_userid_sha256, dkLen=32, count=100000)
-    返回 raw bytes
-    """
-    salt = __import__("hashlib").sha256(f"user_{user_identifier}".encode()).digest()
-    user_key = PBKDF2(server_master_key, salt, dkLen=32, count=100000)
-    return user_key
 
 # ======================== 用户认证视图 ========================
 class RegisterView(generics.CreateAPIView):
@@ -233,7 +225,8 @@ class ActivateLicenseView(APIView):
         license_key = f"LIC-{uuid.uuid4().hex[:16].upper()}"
         
         try:
-            user_key_bytes = _derive_user_key(SERVER_MASTER_KEY, str(user.id))
+            # 直接调用 CryptoService 中统一的、健壮的方法
+            user_key_bytes = CryptoService.derive_user_key(str(user.id))
             user_key_b64 = base64.b64encode(user_key_bytes).decode()
         except Exception as e:
             logger.error("派生 user_key 失败: %s", e, exc_info=True)
