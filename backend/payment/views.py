@@ -93,3 +93,5 @@ def stripe_webhook(request):
         print(f"✅ 为 {email} 创建许可证: {license_obj.license_key}")
     
     return Response({'status': 'success'})
+
+

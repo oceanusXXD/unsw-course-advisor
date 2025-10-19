@@ -15,7 +15,7 @@ def plugin_install() -> Dict[str, Any]:
     try:
         
         # 调用后端API（GET请求）
-        api_url = "http://localhost:8000/extension/start-extension/"
+        api_url = "http://localhost:8000/api/extension/start-extension/"
         response = requests.get(
             api_url,
             params={"action": "install_fixed"},  # 添加GET参数
