@@ -38,43 +38,44 @@ export default function LicensePanel({ user, onClose }) {
         }
     }
 
-const handleActivate = async (e) => {
-    e.preventDefault();
-    if (!deviceId.trim()) {
-        setError('请输入设备ID');
-        return;
-    }
-
-    setActivating(true);
-    setError('');
-    setSuccess('');
-
-    try {
-        const data = await activateLicense(deviceId.trim());
-        console.log('[ACTIVATE RESPONSE]', data);
-
-        if (data.user_key) {
-            localStorage.setItem('user_key', data.user_key);
-            setUserKey(data.user_key);
-            console.log('[ACTIVATE] user_key(b64) length:', data.user_key.length);
+    const handleActivate = async (e) => {
+        e.preventDefault();
+        if (!deviceId.trim()) {
+            setError('请输入设备ID');
+            return;
         }
 
-        // ✅ 修复：兼容直接返回 license 对象
-        setLicense(data.license || data);
+        setActivating(true);
+        setError('');
+        setSuccess('');
 
-        // 使用 API 返回的消息
-        setSuccess(data.message || '许可证激活成功！请务必保存 user_key');
-    } catch (err) {
-        setError(err.message);
-    } finally {
-        setActivating(false);
-    }
-};
+        try {
+            const data = await activateLicense(deviceId.trim());
+            console.log('[ACTIVATE RESPONSE]', data);
+
+            if (data.user_key) {
+                localStorage.setItem('user_key', data.user_key);
+                setUserKey(data.user_key);
+                console.log('[ACTIVATE] user_key(b64) length:', data.user_key.length);
+            }
+
+            // ✅ 修复：兼容直接返回 license 对象
+            setLicense(data.license || data);
+
+            // 使用 API 返回的消息
+            setSuccess(data.message || '许可证激活成功！请务必保存 user_key');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setActivating(false);
+        }
+    };
 
 
     const handleTestDecrypt = async (e) => {
         e.preventDefault();
 
+        // 保留这些必要的本地输入检查
         if (!testFileContent.trim()) {
             setError('请输入文件内容');
             return;
@@ -84,7 +85,7 @@ const handleActivate = async (e) => {
             return;
         }
         if (!license || !license.license_key) {
-            setError('需要 license 才能发起解密请求');
+            setError('需要 license_key 才能发起解密请求');
             return;
         }
 
@@ -95,7 +96,6 @@ const handleActivate = async (e) => {
 
         try {
             console.log('解析加密文件内容...');
-            
             let encryptedData;
             try {
                 encryptedData = JSON.parse(testFileContent.trim());
@@ -106,23 +106,14 @@ const handleActivate = async (e) => {
 
             console.log('开始完整的解密流程...');
 
-            // 关键修复：使用正确的 key 'access' 来获取 token
-            const authToken = localStorage.getItem('access');
-            if (!authToken) {
-                // 这个错误现在不应该再发生了
-                throw new Error('未找到认证Token，请先登录');
-            }
+            // ✅ 已删除多余的 authToken 检查
 
-            // 注意：这里我们不再需要手动传递 authToken，因为你的 api.js 函数会自动处理
-            // 我们只需要确保 api.js 中的 decryptLicensedFile 函数内部调用 _makeRequest 时
-            // 设置了 useAuth: true
             const result = await decryptLicensedFile(
                 encryptedData,         // 解析后的加密文件对象
-                license.license_key,   // 用户的许可证
+                license.license_key,   // 用户的许可证密钥
                 userKey                // 用户的 user_key (base64)
             );
-            console.log("解密许可：",license.license_key)
-            console.log("解密userKey：",userKey)
+
             console.log('解密流程完成', result);
 
             setTestResult({

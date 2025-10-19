@@ -8,7 +8,7 @@ import os
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-
+from .email_utils import send_license_email
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -440,3 +440,51 @@ class GetMyLicenseView(APIView):
             "license_activated_at": u.license_activated_at,
             "license_expires_at": u.license_expires_at,
         }, status=status.HTTP_200_OK)
+
+
+
+#class StripeWebhookView(APIView):
+#    permission_classes = [AllowAny] # Webhook 不需要用户登录
+#
+#    def post(self, request):
+#        payload = request.body
+#        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+#        # 假设你在 settings.py 中有 STRIPE_WEBHOOK_SECRET
+#        webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', None)
+#
+#        if not webhook_secret:
+#            logger.error("Stripe webhook secret 未配置！")
+#            return Response(status=500)
+#
+#        try:
+#            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+#        except (ValueError, stripe.error.SignatureVerificationError) as e:
+#            return Response(status=400)
+#
+#        if event['type'] == 'checkout.session.completed':
+#            session = event['data']['object']
+#            email = session.get('customer_email')
+#            duration_days = int(session.get('metadata', {}).get('duration_days', 365))
+#
+#            if not email:
+#                return Response(status=400)
+#
+#            # 找到用户或创建新用户
+#            user, created = User.objects.get_or_create(email=email)
+#            if created:
+#                user.set_unusable_password() # 如果是新用户，先设置一个不可用密码
+#                user.save()
+#
+#            # 为用户生成许可证信息
+#            user.license_key = f"LIC-{uuid.uuid4().hex[:16].upper()}"
+#            user.license_expires_at = timezone.now() + timedelta(days=duration_days)
+#            user.license_active = False # 重要：只发放，不激活
+#            user.save()
+#
+#            # 发送邮件
+#            try:
+#                send_license_email(user.email, user.license_key)
+#            except Exception as e:
+#                logger.error(f"发送许可证邮件失败: {e}")
+#
+#        return Response(status=200)

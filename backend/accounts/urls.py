@@ -6,7 +6,7 @@ from .views import (
     CurrentUserView,
     LogoutView,
     ChangePasswordView,
-    
+    #StripeWebhookView,
     # 许可证管理
     ActivateLicenseView,
     ValidateLicenseView,
@@ -29,4 +29,6 @@ urlpatterns = [
     path('license/validate/', ValidateLicenseView.as_view(), name='license-validate'),
     path('license/my/', GetMyLicenseView.as_view(), name='my-license'),
     path('license/file-key/', GetFileDecryptKeyView.as_view(), name='file-decrypt-key'),
+    # ========== 支付认证接口 ==========
+    #path('stripe-webhook/', StripeWebhookView.as_view(), name='stripe-webhook'),
 ]

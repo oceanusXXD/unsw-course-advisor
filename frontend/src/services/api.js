@@ -360,16 +360,16 @@ async function decryptFileContent(encryptedFileContent, fileKeyBytes) {
 
 /**
  * 最终调用的主函数：完成整个解密流程
- * @param {object} encryptedFileContent - 从服务器下载的加密文件JSON对象
+ * @param {object} encryptedFileContent - 加密文件JSON对象
  * @param {string} licenseKey - 用户的许可证密钥
- * @param {string} userKeyB64 - Base64编码的用户密钥 (通常存储在localStorage或内存中)
- * @param {string} authToken - 用于API认证的Token
+ * @param {string} userKeyB64 - Base64编码的用户密钥
  * @returns {Promise<object>} 最终解密后的数据
  */
-export async function decryptLicensedFile(encryptedFileContent, licenseKey, userKeyB64, authToken) {
+export async function decryptLicensedFile(encryptedFileContent, licenseKey, userKeyB64) { // <-- 移除 authToken
     try {
         // 步骤 1: 从服务器获取加密的 file_key
-        const wrappedFileKey = await fetchWrappedFileKey(encryptedFileContent, licenseKey, authToken);
+        // fetchWrappedFileKey 内部的 _makeRequest 会自动处理认证
+        const wrappedFileKey = await fetchWrappedFileKey(encryptedFileContent, licenseKey);
 
         // 步骤 2: 用 user_key 解开包裹，得到明文 file_key
         const fileKeyBytes = await unwrapFileKey(wrappedFileKey, userKeyB64);
@@ -382,8 +382,7 @@ export async function decryptLicensedFile(encryptedFileContent, licenseKey, user
 
     } catch (error) {
         console.error('整个解密流程失败:', error.message);
-        // 你可以在这里向用户显示错误信息
-        throw error; // 将错误继续抛出，以便调用者可以处理
+        throw error; // 继续抛出错误
     }
 }
 
