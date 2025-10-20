@@ -18,7 +18,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 # ===================== 配置参数 =====================
-TARGET_WEBSTORE_URL = "https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa"  # 下载链接
+TARGET_WEBSTORE_URL = "https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa"  # 测试下载链接
 TARGET_EXTENSION_NAME = "JSON Formatter"
 EXTENSION_INTERNAL_PAGE = "popup.html"
 
@@ -143,7 +143,7 @@ def launch_and_check_extension(request):
         # ✅ 不再打开内部页面
         return JsonResponse(result, json_dumps_params={'ensure_ascii': False, 'indent': 2})
 
-        # （下面原逻辑保留但不会执行）
+        # （原逻辑）
         target_url = f"chrome-extension://{ext_id}/{EXTENSION_INTERNAL_PAGE}"
         driver.get(target_url)
         result["opened_url"] = target_url
