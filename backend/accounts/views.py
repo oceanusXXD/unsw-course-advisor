@@ -22,7 +22,6 @@ from accounts.models import FileKey
 from accounts.services import CryptoService
 from .models import User
 from .serializers import RegisterSerializer, LoginSerializer, LicenseActivateSerializer
-from chatbot.langgraph_agent.tools import crypto
 from dotenv import load_dotenv
 from services import CryptoService
 # 加载环境变量

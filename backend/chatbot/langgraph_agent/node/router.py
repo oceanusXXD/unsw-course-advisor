@@ -10,11 +10,11 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
     print("!!!!!!!!!!!!!!state in router:",state)
     query = state.get("query", "")
     
-    # 添加插件安装工具定义（无参数版本）
+    # 添加插件安装工具定义
     if "plugin_install" not in TOOL_REGISTRY:
         TOOL_REGISTRY["plugin_install"] = {
             "description": "当用户明确要求安装、更新或添加系统插件时使用此工具（无需参数）",
-            "args": {}  # 空字典表示不需要参数
+            "args": {}
         }
 
     tool_definitions = json.dumps([

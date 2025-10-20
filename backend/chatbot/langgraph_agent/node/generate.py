@@ -31,7 +31,6 @@ def _parse_last_tool_message(messages: list) -> Optional[Dict]:
         return content
     if isinstance(content, str):
         try:
-            # 兼容单引号 JSON（尽量），但优先标准解析
             try:
                 return json.loads(content)
             except json.JSONDecodeError:
@@ -43,7 +42,7 @@ def _parse_last_tool_message(messages: list) -> Optional[Dict]:
 
 def contains_successful_plugin_installation(messages: list) -> bool:
     """
-    检查最新 ToolMessage 中是否包含插件安装成功的信息（保留你原有逻辑）。
+    检查最新 ToolMessage 中是否包含插件安装成功的信息
     """
     content = _get_last_tool_message_content(messages)
     if not content:

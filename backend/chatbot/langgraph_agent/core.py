@@ -13,7 +13,7 @@ from langgraph.graph.message import add_messages
 load_dotenv()
 
 # --- 配置 ---
-QWEN_BASE_URL = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+QWEN_BASE_URL = os.getenv("QWEN_BASE_URL")
 QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen-max")
 GROUNDING_MODEL = os.getenv("GROUNDING_MODEL", "qwen-plus")
 API_KEY = os.getenv("DASHSCOPE_API_KEY")
@@ -104,34 +104,6 @@ class PerformanceMonitor:
 
 perf_monitor = PerformanceMonitor()
 
-def monitor_performance(node_name: str):
-    """装饰器工厂，用于包裹节点函数"""
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            start_time = time.time()
-            try:
-                result = func(*args, **kwargs)
-                duration = time.time() - start_time
-                perf_monitor.record_node(node_name, duration)
-                if ENABLE_VERBOSE_LOGGING:
-                    print(f"⏱️  [{node_name}] completed in {duration:.3f}s")
-                return result
-            except Exception:
-                duration = time.time() - start_time
-                perf_monitor.record_node(f"{node_name}_ERROR", duration)
-                raise
-        return wrapper
-    return decorator
-
-
-RESPONSE_TEMPLATES = {
-    "error_api": "抱歉，我在与我的核心模型通信时遇到了问题。请稍后再试。",
-    "error_rag": "抱歉，我在检索课程信息时遇到了内部错误。我已经记录了这个问题。",
-    "error_tool": "抱歉，在尝试执行一个工具时发生了错误。",
-    "error_grounding": "我找到了相关信息，但在生成确认无误的答案时遇到了困难。为避免提供错误信息，我无法回答这个问题。",
-    "fallback_no_rag_docs": "我在知识库中没有找到关于您问题的具体信息，但我会尽力根据通用知识来回答。"
-}
 
 # 动态加载 tools 包中的工具（如果可用）
 try:
@@ -258,7 +230,10 @@ def call_qwen_sync(messages: list,
         if ENABLE_VERBOSE_LOGGING:
             traceback.print_exc()
         return json.dumps({"error": "API_ERROR", "message": str(e)}, ensure_ascii=False)
+    
 
+
+# ----------------------未使用--------------------------------------
 # 性能报告打印
 def print_performance_summary(perf_report: Dict[str, Any]):
     print("\n" + "=" * 80)
@@ -278,3 +253,31 @@ def print_performance_summary(perf_report: Dict[str, Any]):
         avg_time = stats['total_time'] / stats['count'] if stats['count'] > 0 else 0
         print(f"    {purpose:15s}: {stats['count']} calls, {stats['total_time']:.3f}s (avg: {avg_time:.3f}s)")
     print("\n" + "=" * 80)
+
+RESPONSE_TEMPLATES = {
+    "error_api": "抱歉，我在与我的核心模型通信时遇到了问题。请稍后再试。",
+    "error_rag": "抱歉，我在检索课程信息时遇到了内部错误。我已经记录了这个问题。",
+    "error_tool": "抱歉，在尝试执行一个工具时发生了错误。",
+    "error_grounding": "我找到了相关信息，但在生成确认无误的答案时遇到了困难。为避免提供错误信息，我无法回答这个问题。",
+    "fallback_no_rag_docs": "我在知识库中没有找到关于您问题的具体信息，但我会尽力根据通用知识来回答。"
+}
+
+def monitor_performance(node_name: str):
+    """装饰器工厂，用于包裹节点函数"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            try:
+                result = func(*args, **kwargs)
+                duration = time.time() - start_time
+                perf_monitor.record_node(node_name, duration)
+                if ENABLE_VERBOSE_LOGGING:
+                    print(f"⏱️  [{node_name}] completed in {duration:.3f}s")
+                return result
+            except Exception:
+                duration = time.time() - start_time
+                perf_monitor.record_node(f"{node_name}_ERROR", duration)
+                raise
+        return wrapper
+    return decorator

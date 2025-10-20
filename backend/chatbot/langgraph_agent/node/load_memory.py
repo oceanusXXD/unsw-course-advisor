@@ -7,7 +7,6 @@ from core import MEMORY_DIR, ENABLE_VERBOSE_LOGGING
 
 def node_load_memory(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    更稳健的 load：
     - 读取文件并标准化为 {'history': [...], ...latest fields...}
     - 清理 entry 中可能嵌套的 'history'（避免循环嵌套）
     - 返回 {"memory": memory_dict}

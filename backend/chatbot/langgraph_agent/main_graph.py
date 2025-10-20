@@ -207,7 +207,7 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
                     "messages": final_history,
                     "query": query,
                     "user_id": user_id,
-                    # 尽量保留 route 信息（若 result 中含 route）
+                    # 保留 route 信息
                     "route": result.get("route", "general_chat"),
                     "answer": final_answer,
                     "memory": result.get("memory", {}) or {},

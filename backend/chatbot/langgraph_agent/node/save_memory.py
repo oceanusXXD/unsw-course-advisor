@@ -8,12 +8,6 @@ from typing import Dict, Any
 from core import MEMORY_DIR, ENABLE_VERBOSE_LOGGING
 
 def node_save_memory(state: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Append/update history while avoiding nested 'history' inside 'memory'.
-    - If existing file contains 'memory' with a 'history', we strip that nested history when embedding.
-    - If the last history entry has same (query, answer) as the new one, update last instead of appending.
-    - If answer is generator-like, write placeholder "<STREAMING_ANSWER_NOT_SAVED>".
-    """
     try:
         if ENABLE_VERBOSE_LOGGING:
             pass
@@ -25,7 +19,7 @@ def node_save_memory(state: Dict[str, Any]) -> Dict[str, Any]:
     memory_path = os.path.join(MEMORY_DIR, f"{user_id}.json")
 
     def convert_message(msg):
-        """递归转换消息对象为可序列化的字典（保持你的既有规则）。"""
+        """递归转换消息对象为可序列化的字典"""
         if hasattr(msg, 'dict') and callable(getattr(msg, "dict")):
             try:
                 return msg.dict()

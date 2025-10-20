@@ -1,21 +1,18 @@
-# config_loader.py (已修正)
+# config_loader.py
 import importlib
 import os
 import sys
 import yaml
-from types import ModuleType
 from typing import Callable, Dict, Any, Optional
 from langgraph.graph import StateGraph, START, END
 import importlib
 import inspect
 import sys
-# --- START: 代码修改区域 ---
 
 # node 包的名称
 NODE_PKG = "node"
 AGENT_DIR = os.path.dirname(__file__)
 if AGENT_DIR not in sys.path:
-    # 使用 insert(0, ...) 确保优先搜索我们的项目路径
     sys.path.insert(0, AGENT_DIR)
 
 def normalize_node_id(node_id): # 标准化节点 ID，处理 __START__ 和 __END__
@@ -103,7 +100,6 @@ def load_graph_from_config(config_path: str, ChatState, monitor_wrapper: Optiona
         # 1. 尝试按 function 指定的点分路径导入
         if func_spec:
             try:
-                # 这里的导入现在会成功
                 fn = _import_function(func_spec)
             except Exception as e: # 捕获所有异常，继续尝试按约定导入
                 print(f"Warning: Failed to import function '{func_spec}' for node '{node_id}'. Error: {e}")
@@ -116,7 +112,6 @@ def load_graph_from_config(config_path: str, ChatState, monitor_wrapper: Optiona
             except Exception as e:
                 raise ImportError(f"无法加载节点 {node_id}: {e}") from e
 
-        # 3. 如果需要监控且提供了监控 wrapper，则包裹
         if node_cfg.get("monitor", False) and monitor_wrapper:
             fn = monitor_wrapper(node_id)(fn)
 

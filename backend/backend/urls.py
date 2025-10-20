@@ -28,12 +28,3 @@ api_patterns = [
 urlpatterns = [
     path("api/", include(api_patterns)),
 ]
-
-# 开发环境下提供媒体文件访问
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# 自定义后台标题（可选）
-admin.site.site_header = "课程顾问系统管理后台"
-admin.site.site_title = "管理后台"
-admin.site.index_title = "欢迎使用管理后台"

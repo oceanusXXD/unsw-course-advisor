@@ -4,9 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 import traceback
-from chatbot.langgraph_agent import main_graph
-from chatbot import langgraph_agent
-from chatbot.langgraph_agent.tools import crypto as crypto_module
+from chatbot.langgraph_agent.main_graph import run_chat
 
 @csrf_exempt
 def chat_multiround(request):
@@ -40,7 +38,7 @@ def chat_multiround(request):
                     if "bot" in turn:
                         init_messages.append({"type": "ai", "content": turn["bot"]})
 
-                for event in langgraph_agent.main_graph.run_chat(query, init_messages=init_messages):
+                for event in run_chat(query, init_messages=init_messages):
                     json_event = json.dumps(event, ensure_ascii=False)
                     yield f"data: {json_event}\n\n".encode('utf-8')
             
