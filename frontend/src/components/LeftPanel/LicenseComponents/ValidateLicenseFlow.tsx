@@ -49,7 +49,7 @@ const ValidateLicenseFlow: React.FC<Props> = ({ onBack, onSuccess }) => {
                 disabled={isLoading}
             >
                 <FiArrowLeft size={12} /> Back to options
-                DDI
+
             </button>
             <div className="text-center">
                 <FiLogIn className="mx-auto text-4xl text-neutral-400" />
@@ -77,7 +77,7 @@ const ValidateLicenseFlow: React.FC<Props> = ({ onBack, onSuccess }) => {
                 disabled={isLoading || activationKey.length < 8}
             >
                 {isLoading ? "Validating..." : "Validate & Activate"}
-                DDI
+
             </button>
         </form>
     );
