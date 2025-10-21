@@ -1,49 +1,29 @@
 {
-    "manifest_version": 3,
-    "name": "API Runner (Local) - Stellic/UNSW",
-    "description": "在打开特定页面时注入脚本，使用页面身份发起多个 API 请求并回传结果（本地执行，默认不外发数据）。",
-    "version": "1.0.0",
-    "permissions": [
-        "scripting",
-        "activeTab",
-        "storage"
-    ],
-    "host_permissions": [
-        "https://sentry.tools.stellic.com/*",
-        "https://analytics.stellic.com/*",
-        "https://myplan.unsw.edu.au/*",
-        "https://*.stellic.com/*",
-        "https://www.baidu.com/*" ,
-        "<all_urls>"
-    ],
-    "action": {
-        "default_popup": "popup.html"
-    },
-    "background": {
-        "service_worker": "background.js"
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "https://myplan.unsw.edu.au/*",
-                "https://*.stellic.com/*",
-                "https://www.baidu.com/*" ,
-                "<all_urls>"
-            ],
-            "js": [
-                "content-script.js"
-            ],
-            "run_at": "document_idle"
-        }
-    ],
-    "web_accessible_resources": [
-        {
-            "resources": [
-                "injector.js"
-            ],
-            "matches": [
-                "<all_urls>"
-            ]
-        }
-    ]
+  "manifest_version": 3,
+  "name": "课程助手插件",
+  "version": "0.1.0",
+  "description": "上传文件并使用 License Key 自动选课。",
+  "permissions": ["tabs", "scripting", "storage"],
+  "host_permissions": ["http://localhost/*", "https://localhost/*"],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "48": "icons/icon.svg"
+    }
+  },
+  "icons": {
+    "16": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "128": "icons/icon.svg"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://localhost/*", "https://localhost/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }
