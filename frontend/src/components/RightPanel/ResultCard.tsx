@@ -1,5 +1,4 @@
-// src/components/RightPanel/ResultCard.tsx
-import React from "react";
+import React, { useState, useEffect } from "react"; // [!!] Added useEffect
 
 export interface CourseData {
   id: string;
@@ -20,27 +19,55 @@ const ResultCard: React.FC<ResultCardProps> = ({
   expanded = false,
   onClick,
 }) => {
-  const pillBg = "bg-[#F5F6F8]";
-  const pillHover = "hover:bg-[#ECEDEF]";
-  const textMuted = "text-[#6B6C6E]";
-  const titleColor = "text-[#111827]";
+  // [!!] Added dark mode state listener
+  const [isDark, setIsDark] = useState<boolean>(
+    document.documentElement.classList.contains("dark"),
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  // [!!] Use isDark state for colors
+  const pillBg = isDark ? "dark:bg-neutral-800" : "bg-[#F5F6F8]";
+  const pillHover = isDark ? "dark:hover:bg-neutral-700" : "hover:bg-[#ECEDEF]";
+  const textMuted = isDark ? "dark:text-neutral-400" : "text-[#6B6C6E]";
+  const titleColor = isDark ? "dark:text-neutral-100" : "text-[#111827]";
+  const arrowColor = isDark ? textMuted : titleColor; // Arrow is muted in dark, dark in light
+
+  // [!!] Use isDark state for background gradient/color
+  const getBackgroundStyle = () => {
+    if (expanded) {
+      return isDark
+        ? "linear-gradient(180deg, #262626 0%, #171717 100%)" // neutral-800 to neutral-900
+        : "linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%)"; // white to gray-50
+    } else {
+      return isDark ? "#262626" : "#F5F6F8"; // neutral-800 vs specific light gray
+    }
+  };
 
   return (
     <div className="w-full mb-4 last:mb-0">
       <div
         onClick={() => onClick?.(course.id)}
         className={`
-          w-full cursor-pointer select-none
-          transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
-          ${pillBg} ${pillHover}
-          shadow-sm hover:shadow-md
-        `}
+     w-full cursor-pointer select-none
+     transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
+     ${pillBg} ${pillHover}
+     shadow-sm hover:shadow-md
+     dark:shadow-neutral-900 dark:hover:shadow-neutral-700/50
+    `}
         style={{
           borderRadius: expanded ? "20px" : "9999px",
           padding: expanded ? "16px" : "12px 16px",
-          background: expanded
-            ? "linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%)"
-            : "#F5F6F8",
+          background: getBackgroundStyle(), // Use dynamic background
           transform: expanded ? "scale(1.02)" : "scale(1)",
           transitionProperty:
             "border-radius, padding, background, transform, box-shadow",
@@ -49,7 +76,10 @@ const ResultCard: React.FC<ResultCardProps> = ({
         }}
       >
         <div className="flex items-center w-full">
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-300 mr-3 overflow-hidden">
+          {/* Icon background */}
+          <div
+            className={`flex-shrink-0 w-8 h-8 rounded-full ${isDark ? "bg-neutral-600" : "bg-gray-300"} mr-3 overflow-hidden`}
+          >
             {course.icon && (
               <img
                 src={course.icon}
@@ -59,6 +89,7 @@ const ResultCard: React.FC<ResultCardProps> = ({
             )}
           </div>
 
+          {/* Course Code */}
           <div
             className={`flex-1 font-semibold ${titleColor} truncate mr-3`}
             title={course.code}
@@ -66,11 +97,17 @@ const ResultCard: React.FC<ResultCardProps> = ({
             {course.code}
           </div>
 
-          <div className={`flex-shrink-0 font-medium ${titleColor} ml-auto pl-3`}>
+          {/* Score */}
+          <div
+            className={`flex-shrink-0 font-medium ${titleColor} ml-auto pl-3`}
+          >
             {course.score}
           </div>
 
-          <div className={`flex-shrink-0 ml-2 ${textMuted}`}>
+          {/* Arrow Icon */}
+          <div className={`flex-shrink-0 ml-2 ${arrowColor}`}>
+            {" "}
+            {/* [!!] Use arrowColor variable */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className={`h-5 w-5 transition-transform duration-500 ease-in-out ${expanded ? "rotate-180" : "rotate-0"
@@ -89,6 +126,7 @@ const ResultCard: React.FC<ResultCardProps> = ({
           </div>
         </div>
 
+        {/* Description */}
         <div
           className={`overflow-hidden transition-all duration-500 ease-in-out`}
           style={{
@@ -108,6 +146,7 @@ const ResultCard: React.FC<ResultCardProps> = ({
   );
 };
 
+// ResultCardsList remains unchanged
 export interface ResultCardsListProps {
   courses: CourseData[];
   expandedId: string | null;

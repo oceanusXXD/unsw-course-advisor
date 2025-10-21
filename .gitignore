@@ -3,7 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 *.cjs
-
+*.exe
 # C extensions
 *.so
 media/

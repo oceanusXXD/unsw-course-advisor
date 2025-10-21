@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-0s4f$=(8qjo8z14o^n%e-xb0iw!nrtx2a!hr%3@ye55impt0h$
 DEBUG = False
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
-
+#ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -77,7 +77,7 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
 }
-
+CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -89,7 +89,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",

@@ -1,4 +1,3 @@
-// 聊天相关类型
 export interface ChatItem {
   id: string;
   title: string;
@@ -9,12 +8,12 @@ export interface ChatItem {
 
 export interface Message {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
 }
 
-// 用户相关类型
+// 用户相关类型 (客户端状态)
 export interface User {
   id: string;
   email: string;
@@ -23,30 +22,43 @@ export interface User {
   subscription: "free" | "plus" | "pro";
 }
 
-// [已修正 ✨]
+// 完整的 AuthState (客户端状态)
 export interface AuthState {
   isLoggedIn: boolean;
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
+  userInitial: string; // [!!] 字段已存在，实现已修正
+}
+export interface LoginTokenResponse {
+  access: string;
+  refresh: string;
 }
 
-// 后端响应类型 (保持不变)
-export interface LoginResponse {
+// registerUser() 的响应类型 (仅包含令牌)
+export interface RegisterTokenResponse {
   access: string;
-  refresh?: string;
+  refresh: string;
+}
+
+// getCurrentUser() 的响应类型 (基于你的实现逻辑)
+// [!!] 修正：这个类型现在匹配你的实现逻辑
+export interface LoginResponse {
+  // 你的代码中称之为 LoginResponse，但它似乎是 GetUserResponse
   user: {
-    id?: string;
+    id: string;
     email: string;
     username?: string;
     name?: string;
     avatar?: string;
   };
-  license_active?: boolean;
+  license_active?: boolean; // 在根级别，匹配 'userResponse.license_active'
 }
 
+// 你的原始 RegisterResponse 类型 (供参考)
+// (你的实现没有使用这个，而是调用了 getCurrentUser)
 export interface RegisterResponse {
-  access: string;
+  IAccess: string;
   refresh?: string;
   user: {
     id?: string;

@@ -1,4 +1,3 @@
-// src/components/Toaster/Toaster.tsx
 import React, { useState, useEffect } from "react";
 
 // --- Toaster ---
@@ -33,17 +32,28 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(() => onRemove(toast.id), 300);
+      setTimeout(() => onRemove(toast.id), 300); // Wait for fade out
     }, toast.duration || 3000);
     return () => clearTimeout(timer);
   }, [toast, onRemove]);
-  const colors = { success: "bg-green-500", error: "bg-red-500", warning: "bg-yellow-500", info: "bg-blue-500" };
+
+  // [!!] Updated color mapping with dark mode variants
+  const colors = {
+    success: "bg-green-500 dark:bg-green-600",
+    error: "bg-red-500 dark:bg-red-600",
+    warning: "bg-yellow-500 dark:bg-yellow-600",
+    info: "bg-blue-500 dark:bg-blue-600", // Using color hints for toasts is usually okay
+    // If you strictly want neutral:
+    // info: "bg-gray-500 dark:bg-neutral-600",
+  };
   const icons = { success: "✓", error: "✕", warning: "⚠", info: "ℹ" };
+
   return (
     <div
       className={`${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
         } transition-all duration-300 ${colors[toast.type]}
-         text-white px-4 py-3 rounded-lg shadow-lg min-w-[300px] max-w-[400px] flex items-start gap-3`}
+     text-white px-4 py-3 rounded-lg shadow-lg dark:shadow-neutral-900/50 // [!!] Added dark shadow
+     min-w-[300px] max-w-[400px] flex items-start gap-3`}
     >
       <span className="text-xl font-bold">{icons[toast.type]}</span>
       <span className="flex-1 text-sm">{toast.message}</span>
@@ -52,7 +62,8 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
           setIsVisible(false);
           setTimeout(() => onRemove(toast.id), 300);
         }}
-        className="text-white hover:text-gray-200 font-bold text-lg leading-none"
+        // [!!] Updated dark hover color
+        className="text-white opacity-70 hover:opacity-100 dark:hover:text-neutral-200 font-bold text-lg leading-none transition-opacity"
       >
         ×
       </button>
@@ -60,6 +71,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   );
 };
 
+// [!!] Toaster container doesn't need specific dark styles, position fixed works fine.
 export const Toaster: React.FC<{ toasts: Toast[]; onRemove: (id: string) => void }> = ({ toasts, onRemove }) => (
   <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
     {toasts.map((toast) => (

@@ -5,13 +5,18 @@ import App from "./App";
 
 const rootElement = document.getElementById("root") as HTMLElement;
 
-if (rootElement) {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
+// ✅ Check system theme preference or local storage
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+  document.documentElement.classList.add("dark");
 } else {
-  console.error("Root element not found!");
+  document.documentElement.classList.remove("dark");
 }
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

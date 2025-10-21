@@ -1,4 +1,3 @@
-// src/components/RightPanel/RightPanel.tsx
 import React, { useState } from "react";
 import { ResultCardsList, CourseData } from "./ResultCard";
 
@@ -17,14 +16,14 @@ const RightPanel: React.FC<RightPanelProps> = ({ results }) => {
   };
 
   return (
-    // 侧边栏面板容器
-    <div className="flex flex-col h-full bg-white w-full">
+    // [!!] Updated dark mode background
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 w-full">
       <div className="flex-1 overflow-y-auto p-3">
         {results.length === 0 ? (
-          // 空状态
-          <div className="text-center text-gray-500 mt-10">暂无结果。</div>
+          // [!!] Updated dark mode empty state text color
+          <div className="text-center text-gray-500 dark:text-neutral-500 mt-10">暂无结果。</div>
         ) : (
-          // 结果列表
+          // 结果列表 (styles are handled within ResultCard)
           <ResultCardsList
             courses={results}
             expandedId={expandedId}
