@@ -8,12 +8,10 @@
   </head>
   <body>
     <div id="app-container" data-view="login">
-      <!-- 登录视图 - 第一步：验证 License -->
       <div id="login-view" class="view">
         <div class="logo">C</div>
         <h1 class="title">课程助手</h1>
         <p class="subtitle">请输入您的许可证密钥</p>
-
         <form id="license-form" class="form-container">
           <div class="form-group">
             <label for="license-key">License Key</label>
@@ -25,18 +23,15 @@
               required
             />
           </div>
-
           <div
             id="license-error"
             class="error-message"
             style="display: none"
           ></div>
-
           <button type="submit" id="verify-license-btn" class="btn btn-primary">
             <span class="btn-text">验证许可证</span>
             <div class="spinner" style="display: none"></div>
           </button>
-
           <p class="info-text">
             还没有许可证？<a href="#" id="create-license-link"
               >点此创建 (试用)</a
@@ -44,14 +39,10 @@
           </p>
         </form>
       </div>
-
-      <!-- User Key 输入视图 - 第二步 -->
       <div id="userkey-view" class="view">
         <div class="logo">C</div>
         <h1 class="title">课程助手</h1>
         <p class="subtitle">许可证验证成功，请输入您的 User Key</p>
-
-        <!-- 显示许可证信息 -->
         <div class="license-info-card">
           <div class="info-row">
             <span class="info-label">许可证状态:</span>
@@ -62,7 +53,6 @@
             <span id="verified-license-expiry" class="info-value"></span>
           </div>
         </div>
-
         <form id="userkey-form" class="form-container">
           <div class="form-group">
             <label for="user-key">User Key (请妥善保存)</label>
@@ -74,18 +64,15 @@
               required
             />
           </div>
-
           <div
             id="userkey-error"
             class="error-message"
             style="display: none"
           ></div>
-
           <button type="submit" id="activate-btn" class="btn btn-primary">
             <span class="btn-text">完成激活</span>
             <div class="spinner" style="display: none"></div>
           </button>
-
           <button
             type="button"
             id="back-to-license-btn"
@@ -96,11 +83,10 @@
         </form>
       </div>
 
-      <!-- 主视图 -->
       <div id="main-view" class="view">
         <header class="header">
           <div class="logo-small">C</div>
-          <h1 class="title-small">开始选课</h1>
+          <h1 class="title-small">课程助手</h1>
           <button id="logout-btn" class="logout-btn" title="登出">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -120,71 +106,106 @@
           </button>
         </header>
 
-        <!-- 许可证信息 -->
-        <div id="license-info" class="license-info" style="display: none">
-          <span class="license-status"></span> (有效期至:
-          <span class="license-expiry"></span>)
-          <div class="spinner license-spinner" style="display: none"></div>
-        </div>
-
-        <!-- 文件拖放区域 -->
-        <div id="dropzone" class="dropzone">
-          <svg
-            class="dropzone-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-
-          <p id="dropzone-text">拖拽加密文件到这里, 或</p>
-
-          <button id="file-select-btn" class="btn btn-secondary">
-            选择文件
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-tab="decrypt-view">
+            文件解密
           </button>
+          <button class="tab-btn" data-tab="unsw-view">UNSW 选课</button>
+        </nav>
 
-          <input
-            type="file"
-            id="file-input"
-            accept=".json,.enc"
+        <div id="decrypt-view" class="tab-content active">
+          <div id="license-info" class="license-info" style="display: none">
+            <span class="license-status"></span> (有效期至:
+            <span class="license-expiry"></span>)
+            <div class="spinner license-spinner" style="display: none"></div>
+          </div>
+          <div id="dropzone" class="dropzone">
+            <svg
+              class="dropzone-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p id="dropzone-text">拖拽加密文件到这里, 或</p>
+            <button id="file-select-btn" class="btn btn-secondary">
+              选择文件
+            </button>
+            <input
+              type="file"
+              id="file-input"
+              accept=".json,.enc"
+              style="display: none"
+            />
+          </div>
+          <button id="submit-course-btn" class="btn btn-primary" disabled>
+            <span class="btn-text">解密文件内容</span>
+            <div class="spinner" style="display: none"></div>
+          </button>
+          <div
+            id="status-message"
+            class="status-message"
             style="display: none"
-          />
+          ></div>
+          <div
+            id="decrypted-output"
+            class="decrypted-output"
+            style="display: none"
+          >
+            <h4>解密结果:</h4>
+            <pre id="decrypted-content-area"></pre>
+          </div>
         </div>
 
-        <!-- 解密按钮 -->
-        <button id="submit-course-btn" class="btn btn-primary" disabled>
-          <span class="btn-text">解密文件内容</span>
-          <div class="spinner" style="display: none"></div>
-        </button>
+        <div id="unsw-view" class="tab-content">
+          <div class="warning" id="unsw-pageWarning" style="display: none">
+            ⚠️ 请在 UNSW 选课页面使用此插件
+          </div>
+          <div class="form-group">
+            <label for="unsw-courseCode">课程代码</label>
+            <input
+              type="text"
+              id="unsw-courseCode"
+              class="input"
+              placeholder="例如: GSOE9011"
+            />
+          </div>
+          <div class="form-group">
+            <label for="unsw-termAlias">学期</label>
+            <input
+              type="text"
+              id="unsw-termAlias"
+              class="input"
+              placeholder="例如: T1, T2, T3 (必填)"
+            />
+          </div>
+          <button id="unsw-enrollBtn" class="btn btn-primary">
+            🚀 开始选课
+          </button>
+          <div
+            id="unsw-status"
+            class="status-message"
+            style="display: none"
+          ></div>
 
-        <!-- 状态消息 -->
-        <div
-          id="status-message"
-          class="status-message"
-          style="display: none"
-        ></div>
-
-        <!-- 解密结果显示区域 -->
-        <div
-          id="decrypted-output"
-          class="decrypted-output"
-          style="display: none"
-        >
-          <h4>解密结果:</h4>
-          <pre id="decrypted-content-area"></pre>
+          <div style="margin-top: 15px">
+            <label>已保存的课程映射：</label>
+            <div class="course-list" id="unsw-courseList"></div>
+          </div>
         </div>
       </div>
     </div>
-
+    <script src="popup-utils.js"></script>
+    <script src="popup-unsw.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

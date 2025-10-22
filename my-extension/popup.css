@@ -513,9 +513,12 @@ body {
 }
 /* 许可证信息卡片 */
 .license-info-card {
+  width: 100%; /* 确保卡片占满宽度 */
+  box-sizing: border-box; /* 包含 padding 和 border */
   background: var(--bg-light);
+  border: 1px solid var(--border-light); /* 添加边框 */
   border-radius: 8px;
-  padding: 12px;
+  padding: 16px; /* 增加内边距 */
   margin-bottom: 20px;
 }
 
@@ -532,4 +535,184 @@ body {
 .info-label {
   color: var(--text-secondary-light);
   font-size: 14px;
+}
+
+/* 确保 .info-value 也有样式 (之前缺失) */
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .license-info-card {
+    background: #262626; /* neutral-800 */
+    border-color: var(--border-dark);
+  }
+  .info-label {
+    color: var(--text-secondary-dark);
+  }
+  .info-value {
+    color: var(--text-primary-dark);
+  }
+}
+
+/* ====================================================== */
+/* ====================================================== */
+/* --- [!!] 以下是为插件 B (UNSW助手) 新增的样式 --- */
+/* ====================================================== */
+/* ====================================================== */
+
+/* --- 新增: 标签页导航 --- */
+.tab-nav {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid var(--border-light);
+  margin: -12px 0 16px 0; /* 贴近 header, 并与内容拉开距离 */
+}
+
+.tab-btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  color: var(--text-secondary-light);
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  flex-grow: 1; /* 让两个按钮平分宽度 */
+  text-align: center;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary-light);
+}
+
+.tab-btn.active {
+  color: var(--color-yellow-500); /* 使用主题色 */
+  border-bottom-color: var(--color-yellow-500);
+}
+
+/* --- 新增: 标签页内容 --- */
+.tab-content {
+  display: none; /* 默认隐藏 */
+  width: 100%;
+  /* 复用 .view 的淡入动画 */
+  animation: fadeInView 0.5s var(--transition-medium) both;
+}
+
+.tab-content.active {
+  display: block; /* 只显示激活的 */
+}
+
+/* --- 新增: UNSW 页面警告框 --- */
+/* (复用 .license-info 的样式) */
+#unsw-pageWarning {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  background-color: #fefce8; /* yellow-50 */
+  border: 1px solid #fde68a; /* yellow-200 */
+  border-radius: 6px;
+  font-size: 13px;
+  color: #ca8a04; /* yellow-600 */
+  box-sizing: border-box;
+}
+
+/* --- 新增: UNSW 课程列表 --- */
+.course-list {
+  width: 100%;
+  margin-top: 12px;
+  background-color: #fafafa; /* 类似 .dropzone */
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 50px;
+  max-height: 140px; /* 限制高度并滚动 */
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.course-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary-light);
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.course-item:last-child {
+  border-bottom: none;
+}
+
+/* --- 新增: UNSW 列表删除按钮 --- */
+/* (复用 .error-message 的样式) */
+.course-item button {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 6px;
+  background-color: #fef2f2; /* error bg */
+  color: #dc2626; /* error text */
+  border: 1px solid #fca5a5; /* error border */
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.course-item button:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ====================================================== */
+/* --- [!!] 新增: 插件 B 的暗黑模式样式 --- */
+/* ====================================================== */
+
+@media (prefers-color-scheme: dark) {
+  /* 标签页导航 (暗黑) */
+  .tab-nav {
+    border-bottom-color: var(--border-dark);
+  }
+  .tab-btn {
+    color: var(--text-secondary-dark);
+  }
+  .tab-btn:hover {
+    color: var(--text-primary-dark);
+  }
+  .tab-btn.active {
+    color: var(--color-yellow-400); /* 使用亮黄色 */
+    border-bottom-color: var(--color-yellow-400);
+  }
+
+  /* 警告框 (暗黑) */
+  #unsw-pageWarning {
+    background-color: rgba(74, 55, 4, 0.3); /* dark yellow bg */
+    border-color: #713f12; /* yellow-800 */
+    color: #facc15; /* yellow-400 */
+  }
+
+  /* 课程列表 (暗黑) */
+  .course-list {
+    background-color: #262626; /* 类似 .dropzone dark */
+    border-color: var(--border-dark);
+  }
+  .course-item {
+    color: var(--text-secondary-dark);
+    border-bottom-color: var(--border-dark);
+  }
+
+  /* 删除按钮 (暗黑) */
+  .course-item button {
+    background-color: #3f1212; /* error dark bg */
+    color: #fca5a5; /* error dark text */
+    border-color: #b91c1c; /* error dark border */
+  }
+  .course-item button:hover {
+    background-color: #b91c1c;
+    color: #fef2f2;
+  }
 }

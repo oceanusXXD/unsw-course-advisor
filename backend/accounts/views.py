@@ -1,4 +1,5 @@
 # views.py — 完整文件（基于你给的版本，GetFileDecryptKeyView 已修改以优先使用 DB）
+import json
 import logging
 import base64
 import uuid
@@ -261,82 +262,6 @@ class ActivateLicenseView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 class ValidateLicenseView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        """
-        验证许可证有效性
-        请求参数:
-        {
-            "license_key": "许可证密钥字符串"
-        }
-        返回:
-        - 有效且未过期: HTTP 200
-        - 无效或过期: HTTP 400
-        """
-        # 统一处理请求数据
-        try:
-            data = self._parse_request_data(request)
-            license_key = self._validate_license_key(data)
-        except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 查询许可证信息
-        user_with_license = User.objects.filter(license_key=license_key).first()
-        if not user_with_license:
-            return Response(
-                {"valid": False, "error": "许可证不存在"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # 检查过期状态
-        is_expired = self._check_license_expiry(user_with_license)
-
-        return self._build_response(user_with_license, request.user, is_expired)
-
-    def _parse_request_data(self, request):
-        """解析请求数据，支持JSON字符串和字典格式"""
-        data = request.data
-        if isinstance(data, str):
-            try:
-                import json
-                return json.loads(data)
-            except json.JSONDecodeError:
-                raise ValueError("请求体不是有效JSON")
-        return data
-
-    def _validate_license_key(self, data):
-        """验证并提取license_key"""
-        license_key = data.get("license_key")
-        if not license_key:
-            raise ValueError("缺失 license_key")
-        return license_key
-
-    def _check_license_expiry(self, user):
-        """检查许可证是否过期"""
-        return (
-            user.license_expires_at and 
-            timezone.now() > user.license_expires_at
-        )
-
-    def _build_response(self, license_user, requesting_user, is_expired):
-        """构建标准化响应"""
-        response_data = {
-            "valid": not is_expired,
-            "is_owner": license_user.id == requesting_user.id,
-            "owner_user_id": license_user.id,
-            "owner_email": license_user.email,
-            "expired": is_expired,
-            "license_active": license_user.license_active,
-            "license_activated_at": license_user.license_activated_at,
-            "license_expires_at": license_user.license_expires_at
-        }
-        return Response(
-            response_data,
-            status=status.HTTP_200_OK if not is_expired else status.HTTP_400_BAD_REQUEST
-        )
-
-class ValidateLicenseView(APIView):
     """验证许可证有效性 - 无需认证"""
     permission_classes = [AllowAny]
 
@@ -511,7 +436,78 @@ class GetMyLicenseView(APIView):
             "license_expires_at": u.license_expires_at,
         }, status=status.HTTP_200_OK)
 
+def resolve_course_map_path(env_path):
+    """
+    将环境变量路径解析为绝对路径，支持相对路径（相对于 manage.py 的启动工作目录）
+    """
+    if not env_path:
+        return None
+    # 展开 ~ 并转为绝对路径
+    env_path = os.path.expanduser(env_path)
+    return os.path.abspath(env_path)
 
+class GetCourseMapView(APIView):
+    """
+    GET /accounts/get_course/?keys=GSOE9011,COMP9101[&term=T2]
+    返回:
+    {
+      "success": true,
+      "data": {
+         "COMP9101": [
+            { "course_id": "...", "term_code": "5266", "term": "T2", "section":"1", "prefix":"0058351" },
+            ...
+         ],
+         ...
+      }
+    }
+    需要认证 (IsAuthenticated)
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        keys_param = request.GET.get("keys", "")
+        term_filter = request.GET.get("term", "").strip()  # 可传 "T1"/"T2"/"T3" 或 "t1"
+        if not keys_param:
+            return Response({"success": False, "error": "缺少 keys 参数"}, status=400)
+
+        requested_keys = [k.strip() for k in keys_param.split(",") if k.strip()]
+        if not requested_keys:
+            return Response({"success": False, "error": "keys 参数为空"}, status=400)
+
+        # 从环境变量读取路径并解析为绝对路径
+        env_path = os.getenv("COURSE_MAP_PATH")
+        json_path = resolve_course_map_path(env_path)
+        if not json_path or not os.path.exists(json_path):
+            return Response({"success": False, "error": "course_map.json 路径无效或不存在", "path": json_path}, status=500)
+
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                course_map = json.load(f)
+        except Exception as e:
+            return Response({"success": False, "error": f"读取 course_map.json 失败: {str(e)}"}, status=500)
+
+        # 结果组织：对于每个请求的 key 返回 list（可能为空）
+        result = {}
+        term_filter_norm = term_filter.upper() if term_filter else None
+
+        for k in requested_keys:
+            entries = course_map.get(k, [])
+            if not isinstance(entries, list):
+                # 兼容旧单值格式：如果 value 是字符串，则转成 list
+                if isinstance(entries, str) and entries:
+                    entries = [{"course_id": entries}]
+                else:
+                    entries = []
+
+            # 如果有 term_filter，则用 entry["term"] 进行过滤（例如 "T2"）
+            if term_filter_norm:
+                filtered = [e for e in entries if (e.get("term") and e.get("term").upper() == term_filter_norm)]
+            else:
+                filtered = entries
+
+            result[k] = filtered
+
+        return Response({"success": True, "data": result})
 
 #class StripeWebhookView(APIView):
 #    permission_classes = [AllowAny] # Webhook 不需要用户登录

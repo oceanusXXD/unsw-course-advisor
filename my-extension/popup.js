@@ -1,4 +1,4 @@
-// popup.js
+// popup.js (精简版)
 document.addEventListener("DOMContentLoaded", () => {
   // --- 常量 ---
   const API_BASE = "http://localhost:8000/api";
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "verified-license-expiry"
   );
 
-  // 主视图
+  // 主视图（解密）
   const mainView = document.getElementById("main-view");
   const logoutBtn = document.getElementById("logout-btn");
   const licenseInfoDiv = document.getElementById("license-info");
@@ -46,192 +46,27 @@ document.addEventListener("DOMContentLoaded", () => {
     "decrypted-content-area"
   );
 
+  // UNSW 选课区域
+  const unswCourseCodeInput = document.getElementById("unsw-courseCode");
+  //const unswCourseIdInput = document.getElementById("unsw-courseId");
+  const unswTermAliasInput = document.getElementById("unsw-termAlias");
+  const unswEnrollBtn = document.getElementById("unsw-enrollBtn");
+  //const unswAddCourseBtn = document.getElementById("unsw-addCourseBtn");
+  const unswStatusEl = document.getElementById("unsw-status");
+  const unswCourseListEl = document.getElementById("unsw-courseList");
+  const unswPageWarning = document.getElementById("unsw-pageWarning");
+
+  // --- 状态变量 ---
   let selectedFile = null;
   let verifiedLicenseData = null; // 存储已验证的许可证信息
 
-  // --- 加密/解密辅助函数 ---
-
-  /** Base64 字符串转 Uint8Array */
-  function base64ToUint8Array(base64) {
-    const cleaned = base64.replace(/-/g, "+").replace(/_/g, "/");
-    const pad =
-      cleaned.length % 4 === 0 ? "" : "=".repeat(4 - (cleaned.length % 4));
-    const b64 = cleaned + pad;
-    const binaryString = atob(b64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
-  }
-
-  /** Uint8Array 转 UTF-8 字符串 */
-  function uint8ArrayToString(bytes) {
-    return new TextDecoder().decode(bytes);
-  }
-
-  /** 拼接两个 Uint8Array */
-  function concat(a, b) {
-    const out = new Uint8Array(a.length + b.length);
-    out.set(a, 0);
-    out.set(b, a.length);
-    return out;
-  }
-
-  /**
-   * AES-GCM 解密
-   * @param {Uint8Array} keyBytes - 密钥字节
-   * @param {Uint8Array} iv - 初始向量 (nonce)
-   * @param {Uint8Array} data - 密文+标签
-   */
-  async function aesGcmDecrypt(keyBytes, iv, data) {
-    const algo = { name: "AES-GCM", iv, tagLength: 128 };
-    const cryptoKey = await crypto.subtle.importKey(
-      "raw",
-      keyBytes,
-      { name: "AES-GCM" },
-      false,
-      ["decrypt"]
-    );
-    const decrypted = await crypto.subtle.decrypt(algo, cryptoKey, data);
-    return new Uint8Array(decrypted);
-  }
-
-  /**
-   * 解包 file_key：用 user_key 解密 wrapped_file_key
-   */
-  async function unwrapFileKey(wrappedFileKey, userKeyB64) {
-    const userKeyBytes = base64ToUint8Array(userKeyB64);
-    const nonce = base64ToUint8Array(wrappedFileKey.nonce);
-    const tag = base64ToUint8Array(wrappedFileKey.tag);
-    const ciphertext = base64ToUint8Array(wrappedFileKey.ciphertext);
-
-    const fileKeyBytes = await aesGcmDecrypt(
-      userKeyBytes,
-      nonce,
-      concat(ciphertext, tag)
-    );
-    return fileKeyBytes;
-  }
-
-  /**
-   * 解密文件内容：用 file_key 解密
-   */
-  async function decryptFileContent(encryptedFileContent, fileKeyBytes) {
-    const nonce = base64ToUint8Array(encryptedFileContent.nonce);
-    const tag = base64ToUint8Array(encryptedFileContent.tag);
-    const ciphertext = base64ToUint8Array(encryptedFileContent.ciphertext);
-
-    const decryptedBytes = await aesGcmDecrypt(
-      fileKeyBytes,
-      nonce,
-      concat(ciphertext, tag)
-    );
-    const decryptedText = uint8ArrayToString(decryptedBytes);
-    return JSON.parse(decryptedText);
-  }
-
-  // --- UI 辅助函数 ---
-
-  function navigateTo(viewName) {
-    appContainer.setAttribute("data-view", viewName);
-  }
-
-  function showLoading(button, isLoading) {
-    const btnText = button.querySelector(".btn-text");
-    const spinner = button.querySelector(".spinner");
-    if (isLoading) {
-      btnText.style.display = "none";
-      spinner.style.display = "block";
-      button.disabled = true;
-    } else {
-      btnText.style.display = "block";
-      spinner.style.display = "none";
-      button.disabled = false;
-    }
-  }
-
-  function showLicenseError(message) {
-    licenseError.textContent = message;
-    licenseError.style.display = "block";
-  }
-
-  function showUserkeyError(message) {
-    userkeyError.textContent = message;
-    userkeyError.style.display = "block";
-  }
-
-  function showStatus(message, type = "info") {
-    statusMessage.textContent = message;
-    statusMessage.className = `status-message ${type}`;
-    statusMessage.style.display = "block";
-  }
-
-  function hideStatus() {
-    statusMessage.style.display = "none";
-  }
-
-  function displayLicenseInfo(details) {
-    if (details) {
-      const isActive = details.license_active && !details.expired;
-      licenseStatusSpan.textContent = isActive ? "许可证有效" : "许可证无效";
-
-      const isDarkMode =
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-      if (isActive) {
-        licenseStatusSpan.style.color = isDarkMode ? "#86efac" : "#16a34a";
-      } else {
-        licenseStatusSpan.style.color = isDarkMode ? "#fca5a5" : "#dc2626";
-      }
-
-      let expiryText = "永久";
-      if (details.license_expires_at) {
-        try {
-          expiryText = new Date(
-            details.license_expires_at
-          ).toLocaleDateString();
-        } catch (e) {
-          expiryText = "未知日期";
-        }
-      }
-      licenseExpirySpan.textContent = expiryText;
-      licenseInfoDiv.style.display = "flex";
-      licenseSpinner.style.display = "none";
-    } else {
-      licenseInfoDiv.style.display = "none";
-    }
-  }
-
-  function showLicenseLoading(isLoading) {
-    if (isLoading) {
-      licenseInfoDiv.style.display = "flex";
-      licenseStatusSpan.textContent = "正在验证...";
-      licenseExpirySpan.textContent = "...";
-      licenseSpinner.style.display = "block";
-    } else {
-      licenseSpinner.style.display = "none";
-    }
-  }
-
-  function displayVerifiedLicenseInfo(details) {
-    const isActive = details.license_active && !details.expired;
-    verifiedLicenseStatus.textContent = isActive ? "✓ 有效" : "✗ 无效";
-    verifiedLicenseStatus.style.color = isActive ? "#16a34a" : "#dc2626";
-
-    let expiryText = "永久";
-    if (details.license_expires_at) {
-      try {
-        expiryText = new Date(details.license_expires_at).toLocaleDateString();
-      } catch (e) {
-        expiryText = "未知日期";
-      }
-    }
-    verifiedLicenseExpiry.textContent = expiryText;
-  }
-
+  // ============================================
   // --- 核心逻辑 ---
+  // ============================================
+
+  // 在脚本加载时立即初始化标签页
+  // (函数定义在 popup-utils.js)
+  initializeTabs();
 
   /** 1. 检查初始状态 */
   async function checkInitialState() {
@@ -251,9 +86,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   checkInitialState();
 
+  // 加载并显示 courseMap（UNSW）
+  async function loadCourseMap() {
+    try {
+      const result = await chrome.storage.local.get(["courseMap"]);
+      if (result.courseMap) {
+        courseMap = result.courseMap;
+      }
+    } catch (e) {
+      console.warn("读取 courseMap 失败，使用默认映射", e);
+    } finally {
+      //displayCourseList();
+    }
+  }
+  loadCourseMap();
+
+  // 定义在 window 上，以便 delBtn 的监听器可以调用
+  window.removeCourse = function (code) {
+    delete courseMap[code];
+    chrome.storage.local.set({ courseMap });
+    //displayCourseList();
+    unswShowStatus(`已删除: ${code}`, "success");
+  };
+
   /** 2. 验证并显示许可证信息 (主视图用) */
   async function validateAndDisplayLicense(licenseKey) {
-    showLicenseLoading(true);
+    showLicenseLoading(
+      true,
+      licenseInfoDiv,
+      licenseStatusSpan,
+      licenseExpirySpan,
+      licenseSpinner
+    );
     try {
       const response = await fetch(`${API_BASE}/accounts/license/validate/`, {
         method: "POST",
@@ -264,13 +128,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
 
       if (response.ok && data.valid) {
-        displayLicenseInfo(data);
+        displayLicenseInfo(
+          data,
+          licenseInfoDiv,
+          licenseStatusSpan,
+          licenseExpirySpan,
+          licenseSpinner
+        );
       } else {
-        displayLicenseInfo({
-          license_active: false,
-          expired: true,
-          license_expires_at: null,
-        });
+        displayLicenseInfo(
+          {
+            license_active: false,
+            expired: true,
+            license_expires_at: null,
+          },
+          licenseInfoDiv,
+          licenseStatusSpan,
+          licenseExpirySpan,
+          licenseSpinner
+        );
         showStatus(`许可证验证失败: ${data.error || "未知错误"}`, "error");
       }
     } catch (error) {
@@ -278,7 +154,13 @@ document.addEventListener("DOMContentLoaded", () => {
       showStatus("无法连接到服务器，请检查网络连接", "error");
       licenseInfoDiv.style.display = "none";
     } finally {
-      showLicenseLoading(false);
+      showLicenseLoading(
+        false,
+        licenseInfoDiv,
+        licenseStatusSpan,
+        licenseExpirySpan,
+        licenseSpinner
+      );
     }
   }
 
@@ -297,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 验证 license
       const response = await fetch(`${API_BASE}/accounts/license/validate/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -312,23 +193,24 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 检查许可证是否激活
       if (!data.license_active) {
         showLicenseError("许可证未激活，请先激活您的许可证");
         showLoading(verifyLicenseBtn, false);
         return;
       }
 
-      // 检查许可证是否过期
       if (data.expired) {
         showLicenseError("许可证已过期，请续费后再使用");
         showLoading(verifyLicenseBtn, false);
         return;
       }
 
-      // 验证成功，保存数据并进入第二步
       verifiedLicenseData = { ...data, license_key: licenseKey };
-      displayVerifiedLicenseInfo(data);
+      displayVerifiedLicenseInfo(
+        data,
+        verifiedLicenseStatus,
+        verifiedLicenseExpiry
+      );
       navigateTo("userkey");
     } catch (error) {
       console.error("验证失败:", error);
@@ -353,7 +235,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 保存密钥到本地
       await chrome.storage.local.set({
         licenseKey: verifiedLicenseData.license_key,
         userKey,
@@ -361,11 +242,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("密钥已保存");
 
-      // 进入主视图
       navigateTo("main");
-      displayLicenseInfo(verifiedLicenseData);
+      displayLicenseInfo(
+        verifiedLicenseData,
+        licenseInfoDiv,
+        licenseStatusSpan,
+        licenseExpirySpan,
+        licenseSpinner
+      );
 
-      // 清空输入
       licenseKeyInput.value = "";
       userKeyInput.value = "";
     } catch (error) {
@@ -451,18 +336,20 @@ document.addEventListener("DOMContentLoaded", () => {
     decryptedOutput.style.display = "none";
 
     try {
-      // Step 1: 获取存储的密钥
       showStatus("正在读取密钥信息...", "info");
-      const { licenseKey, userKey: userKeyB64 } =
-        await chrome.storage.local.get(["licenseKey", "userKey"]);
+      const storageResult = await chrome.storage.local.get([
+        "licenseKey",
+        "userKey",
+      ]);
+      const licenseKey = storageResult.licenseKey;
+      const userKeyB64 = storageResult.userKey;
 
       if (!licenseKey || !userKeyB64) {
         throw new Error("无法获取密钥信息，请重新登录插件");
       }
 
-      // Step 2: 读取加密文件
       showStatus("正在读取加密文件...", "info");
-      const fileContent = await readFileAsText(selectedFile);
+      const fileContent = await readFileAsText(selectedFile); // from popup-utils.js
       let encryptedFileContent;
       try {
         encryptedFileContent = JSON.parse(fileContent);
@@ -474,7 +361,6 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("加密文件内容格式无效 (缺少必要字段)");
       }
 
-      // Step 3: 调用后端获取 wrapped_file_key
       showStatus("正在从服务器获取文件密钥...", "info");
       const response = await fetch(`${API_BASE}/accounts/license/file-key/`, {
         method: "POST",
@@ -497,18 +383,16 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("服务器返回的数据中缺少 wrapped_file_key");
       }
 
-      // Step 4: 用 user_key 解密得到 file_key
       showStatus("正在解密文件密钥...", "info");
-      const fileKeyBytes = await unwrapFileKey(wrappedFileKey, userKeyB64);
+      const fileKeyBytes = await unwrapFileKey(wrappedFileKey, userKeyB64); // from popup-utils.js
 
-      // Step 5: 用 file_key 解密文件内容
       showStatus("正在解密文件内容...", "info");
       const decryptedData = await decryptFileContent(
+        // from popup-utils.js
         encryptedFileContent,
         fileKeyBytes
       );
 
-      // Step 6: 显示解密结果
       showStatus("解密成功！", "success");
       console.log("解密后的数据:", decryptedData);
 
@@ -523,15 +407,100 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- 辅助函数 ---
+  // --- UNSW: 添加课程映射 与 开始选课的逻辑 ---
 
-  /** 读取文件为文本 */
-  function readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (event) => resolve(event.target.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsText(file);
-    });
-  }
-}); // End DOMContentLoaded
+  unswEnrollBtn.addEventListener("click", async () => {
+    const courseCode = (unswCourseCodeInput.value || "").trim();
+    const termAlias = (unswTermAliasInput.value || "").trim(); // 例如: T1, T2, T3
+
+    if (!courseCode) {
+      unswShowStatus("请输入课程代码", "error");
+      return;
+    }
+
+    if (!termAlias) {
+      unswShowStatus("请输入学期 (例如: T1, T2, T3)", "error");
+      return;
+    }
+
+    unswShowStatus("正在从服务器获取课程 ID...", "info");
+    unswEnrollBtn.disabled = true;
+
+    try {
+      // 获取已保存的 userKey 或 token（如果需要认证）
+      const storage = await chrome.storage.local.get([
+        "userKey",
+        "licenseKey",
+        "authToken",
+      ]);
+      const headers = { "Content-Type": "application/json" };
+      if (storage.authToken)
+        headers["Authorization"] = "Bearer " + storage.authToken;
+
+      // 调用后端 API
+      const url = `${API_BASE}/accounts/get_course/?keys=${encodeURIComponent(
+        courseCode
+      )}&term=${encodeURIComponent(termAlias)}`;
+      const resp = await fetch(url, { method: "GET", headers });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || `服务器返回 ${resp.status}`);
+      }
+
+      const respJson = await resp.json();
+      if (!respJson.success) {
+        throw new Error(respJson.error || "后端返回失败");
+      }
+
+      const data = respJson.data || {};
+      const entries = data[courseCode] || [];
+
+      if (!entries || entries.length === 0) {
+        unswShowStatus(
+          `未找到课程 ${courseCode} 在 ${termAlias} 的对应 ID`,
+          "error"
+        );
+        return;
+      }
+
+      // 解析成 [courseCode, courseId, termAlias] 的数组，允许多个条目
+      const courseList = entries.map((item) => {
+        const courseId = item.course_id || item.courseId || item.id;
+        const term = item.term || termAlias; // 如果后端没有 term 字段，就用输入的 termAlias
+        return [courseCode, courseId, term];
+      });
+
+      // 调试用
+      console.log("解析后的课程列表:", courseList);
+
+      // 检查当前活动 tab（UNSW 页面）
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      if (!tab || !tab.url || !tab.url.includes("my.unsw.edu.au")) {
+        unswShowStatus("请先打开 UNSW 选课页面", "error");
+        if (unswPageWarning) unswPageWarning.style.display = "block";
+        return;
+      }
+      if (unswPageWarning) unswPageWarning.style.display = "none";
+
+      // 直接把整个课程列表传给 startEnrollment
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: startEnrollment,
+        args: [courseList], // 注意这里是数组，里面包含多个 [courseCode, courseId, termAlias]
+      });
+
+      unswShowStatus("选课请求已发送，请查看页面结果", "success");
+    } catch (error) {
+      console.error("选课流程失败:", error);
+      unswShowStatus("执行失败: " + (error.message || error), "error");
+    } finally {
+      unswEnrollBtn.disabled = false;
+    }
+  });
+
+  // 避免 page 警告默认隐藏/显示逻辑初始化
+  if (unswPageWarning) unswPageWarning.style.display = "none";
+});

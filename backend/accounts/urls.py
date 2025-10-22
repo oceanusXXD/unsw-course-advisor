@@ -12,6 +12,7 @@ from .views import (
     ValidateLicenseView,
     GetMyLicenseView,
     GetFileDecryptKeyView,
+    GetCourseMapView
 )
 
 app_name = 'accounts'
@@ -31,4 +32,7 @@ urlpatterns = [
     path('license/file-key/', GetFileDecryptKeyView.as_view(), name='file-decrypt-key'),
     # ========== 支付认证接口 ==========
     #path('stripe-webhook/', StripeWebhookView.as_view(), name='stripe-webhook'),
+    
+    # ========== 课程映射接口 ==========
+    path("get_course/", GetCourseMapView.as_view(), name="get_course"),
 ]
