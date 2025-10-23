@@ -55,7 +55,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-*.html
+search1.html
+search2.html
+search3.html
 course_map.json
 # =============================================
 # Documentation

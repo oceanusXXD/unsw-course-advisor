@@ -281,27 +281,49 @@ class ValidateLicenseView(APIView):
             "license_key": "许可证密钥字符串"
         }
         返回:
-        - 有效且未过期: HTTP 200
-        - 无效或过期: HTTP 400
+        - 有效且未过期: HTTP 200 OK
+        - 未激活: HTTP 401 Unauthorized
+        - 已过期: HTTP 402 Payment Required
+        - 不存在: HTTP 404 Not Found
+        - 请求格式错误: HTTP 400 Bad Request
         """
         try:
             data = self._parse_request_data(request)
             license_key = self._validate_license_key(data)
         except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 查询许可证信息
-        user_with_license = User.objects.filter(license_key=license_key).first()
-        if not user_with_license:
+            # [修复] 格式错误 (400) - 直接返回错误，不调用 _build_response
             return Response(
-                {"valid": False, "error": "许可证不存在"}, 
+                {"error": str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        # 检查过期状态
+    
+        user_with_license = User.objects.filter(license_key=license_key).first()
+        
+        if not user_with_license:
+            # [修复] 许可证不存在 (404) - 直接返回错误
+            return Response(
+                {"error": "许可证不存在"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
         is_expired = self._check_license_expiry(user_with_license)
-
-        return self._build_response(user_with_license, is_expired)
+        response_data = self._build_response_data(user_with_license, is_expired)
+    
+        # 未激活 -> 401
+        if not getattr(user_with_license, "license_active", False):
+            response_data["error"] = "许可证未激活"
+            # [修复] 返回包含许可证信息的 401 响应
+            return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    
+        # 已过期 -> 402
+        if is_expired:
+            response_data["error"] = "许可证已过期"
+            # [修复] 返回包含许可证信息的 402 响应
+            return Response(response_data, status=402)  # DRF 没有 HTTP_402 常量
+    
+        # 有效且未过期 -> 200
+        # [修复] 成功时只返回 200 OK
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def _parse_request_data(self, request):
         """解析请求数据，支持JSON字符串和字典格式"""
@@ -328,21 +350,28 @@ class ValidateLicenseView(APIView):
             timezone.now() > user.license_expires_at
         )
 
-    def _build_response(self, license_user, is_expired):
-        """构建标准化响应"""
-        response_data = {
-            "valid": not is_expired,
+    def _build_response_data(self, license_user, is_expired):
+        """
+        [修改] 构建标准化响应字典。
+        这个函数现在只返回一个字典，而不是一个 Response 对象。
+        """
+        # 确保 license_user 不为 None (虽然在这个新逻辑中，它总不为 None)
+        if not license_user:
+             # 这是一个备用措施，理论上不应该被触发
+            return {"valid": False, "expired": True, "error": "内部错误：用户信息丢失"}
+
+        is_active = getattr(license_user, "license_active", False)
+        
+        return {
+            # "valid" 现在表示“是否可以立即使用”
+            "valid": is_active and not is_expired, 
             "owner_user_id": license_user.id,
             "owner_email": license_user.email,
             "expired": is_expired,
-            "license_active": license_user.license_active,
+            "license_active": is_active,
             "license_activated_at": license_user.license_activated_at,
             "license_expires_at": license_user.license_expires_at
         }
-        return Response(
-            response_data,
-            status=status.HTTP_200_OK if not is_expired else status.HTTP_400_BAD_REQUEST
-        )
 
 
 class GetFileDecryptKeyView(APIView):

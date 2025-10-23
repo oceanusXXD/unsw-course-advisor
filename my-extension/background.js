@@ -484,10 +484,44 @@ async function processEnrollmentTerms(
 // -----------------------------
 // 来自 popup/content 的消息统一处理
 // -----------------------------
+
+// Popup 通知函数
+function notifyPopup(message) {
+  chrome.runtime.sendMessage({ from: "background", ...message });
+}
+
+// 通用 fetch 错误处理
+async function fetchWithJsonError(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+
+    if (response.ok) {
+      const data = await response.json();
+      return { ok: true, data };
+    } else {
+      let errorData = null;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        console.error("无法解析错误 JSON:", e);
+      }
+      return {
+        ok: false,
+        error:
+          (errorData && errorData.error) ||
+          response.statusText ||
+          `服务器返回 ${response.status}`,
+      };
+    }
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const { action, payload, type, from } = message;
 
-  // 先处理来自 content_script 的通知（injector-ready / UNSW_TERM_COMPLETED / enrollment-status-update 等）
+  // 处理来自 content_script 的消息
   if (
     from === "content-script" ||
     type === "injector-ready" ||
@@ -508,7 +542,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (type === "enrollment-status-update") {
-      // 页面内脚本反馈状态（可用于进一步处理）
       console.log("[BG] content-script enrollment-status-update:", message);
       sendResponse({ ok: true });
       return false;
@@ -528,7 +561,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       } else {
         enrollmentState.failedTerms.push(term || err || "unknown");
       }
-      // 同步通知 popup
       notifyPopup({
         type: success ? "enrollmentRefresh" : "enrollmentError",
         term,
@@ -539,7 +571,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
   }
 
-  // 来自 popup 的 action 处理
+  // 处理来自 popup 的 action
   (async () => {
     try {
       if (action === "validateLicense") {
@@ -602,6 +634,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
   })();
 
-  // 表示我们将异步调用 sendResponse（返回 true），否则 Chrome 可能关闭 channel
+  // 必须返回 true 才能在异步 sendResponse 中生效
   return true;
 });

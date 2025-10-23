@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const unswEnrollBtn = document.getElementById("unsw-enrollBtn");
   const unswStatusEl = document.getElementById("unsw-status"); // 用于选课的状态
   const unswPageWarning = document.getElementById("unsw-pageWarning");
+  // [!!] 修复: 添加对课程列表文本框的引用
+  const unswCoursePairsInput = document.getElementById("unsw-course-pairs");
 
   // --- 状态变量 ---
   let selectedFile = null;
@@ -51,6 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 初始化 tab
   initializeTabs();
+  // 初始禁用选课按钮
+  if (unswEnrollBtn) unswEnrollBtn.disabled = true;
 
   // ============================================
   // --- [!!] 新增：视图导航函数 ---
@@ -73,8 +77,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message));
         } else if (response && response.ok === false) {
-          // [!!] 关键: 当 background 返回 {ok: false, error: "..."} 时，reject
-          reject(new Error(response.error || "未知错误"));
+          // [!!] 修复:
+          // 尝试从多个可能的字段中提取错误消息
+          const errorMsg =
+            response.error ||
+            (response.data && response.data.error) || // 备用
+            response.message || // 备用
+            "未知错误"; // 最后的备用
+
+          reject(new Error(errorMsg));
         } else {
           resolve(response);
         }
@@ -193,10 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
             `许可证状态: ${response.data.error || "已过期/无效"}`,
             "error"
           );
-          // displayLicenseInfo 内部会调用 logoutAndGoToLogin
         }
       } else {
-        // API 响应 ok=true 但缺少 data (异常)
         displayLicenseInfo(
           {
             license_active: false,
@@ -209,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       }
     } catch (error) {
-      // API 连接失败或返回 ok=false (例如 404, 500, 401)
       console.error("验证许可证失败:", error);
       displayLicenseInfo(
         {
@@ -222,12 +230,8 @@ document.addEventListener("DOMContentLoaded", () => {
         licenseExpirySpan
       );
     }
-    // [!!] 移除: finally 块中的 showLicenseLoading(false,...)，已移入 displayLicenseInfo
   }
 
-  // ============================================
-  // --- License 表单提交 ---
-  // ============================================
   licenseForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     showLoading(verifyLicenseBtn, true);
@@ -242,29 +246,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // sendMessageToBackground 在 ok:false 时会 reject
+      // (即 HTTP 4xx 或 5xx 会进入 catch 块)
       const response = await sendMessageToBackground("validateLicense", {
         license_key: licenseKey,
       });
 
-      // ---- 只有 ok: true 才会到这里 ----
-
-      if (!response.data || !response.data.valid) {
-        showLicenseError(response.data?.error || "许可证无效或已过期");
-        showLoading(verifyLicenseBtn, false);
-        return;
-      }
-      if (!response.data.license_active) {
-        showLicenseError("许可证未激活，请先激活您的许可证");
-        showLoading(verifyLicenseBtn, false);
-        return;
-      }
-      if (response.data.expired) {
-        showLicenseError("许可证已过期，请续费后再使用");
-        showLoading(verifyLicenseBtn, false);
-        return;
-      }
-
-      // 验证成功
+      // 验证成功 (200 OK)
       verifiedLicenseData = { ...response.data, license_key: licenseKey };
       displayVerifiedLicenseInfo(
         response.data,
@@ -273,7 +260,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       navigateTo("userkey");
     } catch (error) {
-      // [!!] 修复: 正确显示来自 background 的错误信息
       console.error("验证失败:", error);
       showLicenseError(error.message || "无法连接到服务器，请检查网络连接");
     } finally {
@@ -354,9 +340,10 @@ document.addEventListener("DOMContentLoaded", () => {
   logoutBtn.addEventListener("click", logoutAndGoToLogin);
 
   // ============================================
-  // --- 文件上传 / 解密 ---
+  // --- 文件上传 / 解密 / 自动填充选课列表 ---
   // ============================================
 
+  // 隐藏原来的解密输出和提交按钮
   try {
     const decryptedOutput = document.getElementById("decrypted-output");
     if (decryptedOutput) decryptedOutput.style.display = "none";
@@ -370,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   } catch (e) {}
 
-  // 绑定文件选择
+  // 绑定文件选择按钮
   fileSelectBtn.addEventListener("click", () => fileInput.click());
 
   fileInput.addEventListener("change", (e) => {
@@ -378,6 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
     handleFileAutoProcess(f);
   });
 
+  // 拖拽上传
   dropzone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropzone.classList.add("dragover");
@@ -392,6 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
     handleFileAutoProcess(f);
   });
 
+  // 更新选择文件 UI
   function handleFile(f) {
     if (f) {
       selectedFile = f;
@@ -402,10 +391,19 @@ document.addEventListener("DOMContentLoaded", () => {
       dropzoneText.textContent = "拖拽加密文件到这里, 或";
       hideStatus();
     }
+    if (fileInput) fileInput.value = ""; // 清空 input 以便选择同名文件
   }
 
+  // 上传后自动处理文件
   async function handleFileAutoProcess(file) {
     handleFile(file);
+
+    if (!unswCoursePairsInput || !unswEnrollBtn) {
+      console.error(
+        "UI 元素未正确加载 (unswCoursePairsInput or unswEnrollBtn)"
+      );
+      return;
+    }
 
     if (!file) {
       unswCoursePairsInput.value = "";
@@ -423,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("文件不是有效的 JSON");
       }
 
-      // 文件已是解密后的结构（包含 selected 字段）
+      // 如果 JSON 已包含 selected 字段，直接填充
       if (parsedJson && Array.isArray(parsedJson.selected)) {
         const pairs = parsedJson.selected
           .map((it) => {
@@ -443,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 否则文件为加密包，需要请求后台获取 wrapped_file_key 并本地解密
+      // 否则请求后台解密
       showStatus("向服务器请求文件密钥...", "info");
       const storageResult = await chrome.storage.local.get([
         "licenseKey",
@@ -454,15 +452,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!licenseKey || !userKeyB64)
         throw new Error("缺少 licenseKey 或 userKey，请先登录插件");
 
-      // [!!] 此处逻辑正确：sendMessageToBackground 会在 ok:false 时 reject
       const resp = await sendMessageToBackground("getFileKey", {
         encrypted_file: parsedJson,
         license_key: licenseKey,
       });
-
       if (!resp || !resp.data) throw new Error("服务器返回数据格式错误");
 
-      const wrappedFileKey = resp.data && resp.data.wrapped_file_key;
+      const wrappedFileKey = resp.data.wrapped_file_key;
       if (!wrappedFileKey)
         throw new Error("服务器返回数据中缺少 wrapped_file_key");
 
@@ -520,6 +516,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   unswEnrollBtn.addEventListener("click", async () => {
+    // [!!] 修复: 确保 unswCoursePairsInput 存在
+    if (!unswCoursePairsInput) {
+      unswShowStatus("错误: 课程输入框未找到", "error");
+      return;
+    }
+
     const inputText = (unswCoursePairsInput.value || "").trim();
     if (!inputText) {
       unswShowStatus("请输入至少一对课程和学期", "error");
