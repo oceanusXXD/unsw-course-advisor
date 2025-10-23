@@ -25,7 +25,7 @@ def _format_context(retrieved: List[Dict[str, Any]]) -> str:
 
 def node_grounding_check(state: Dict[str, Any], force_check: bool = False) -> Dict[str, Any]:
     """
-    Grounding 检查 (已修复):
+    Grounding 检查:
     - 检查 "answer" 是否被 "retrieved" 支持。
     - 如果没有 "retrieved" 文档 (非 RAG)，则跳过检查 (默认为 True)。
     """

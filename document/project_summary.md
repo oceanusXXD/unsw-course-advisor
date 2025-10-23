@@ -139,7 +139,6 @@
       SERVER_MASTER_KEY=your_strong_base64_encoded_32_byte_key_here
 
       # --- RAG 数据库路径 (相对于 backend/manage.py) ---
-      # 确保这些路径指向你实际生成的文件
       FAISS_INDEX_PATH=../RAG_database/vector_store/faiss_index.bin
       METADATA_PATH=../RAG_database/vector_store/metadata.jsonl
 

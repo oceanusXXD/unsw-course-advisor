@@ -232,7 +232,7 @@ class ActivateLicenseView(APIView):
         license_key = f"LIC-{uuid.uuid4().hex[:16].upper()}"
         
         try:
-            # 直接调用 CryptoService 中统一的、健壮的方法
+            # 直接调用 CryptoService
             user_key_bytes = CryptoService.derive_user_key(str(user.id))
             user_key_b64 = base64.b64encode(user_key_bytes).decode()
         except Exception as e:
@@ -291,7 +291,6 @@ class ValidateLicenseView(APIView):
             data = self._parse_request_data(request)
             license_key = self._validate_license_key(data)
         except ValueError as e:
-            # [修复] 格式错误 (400) - 直接返回错误，不调用 _build_response
             return Response(
                 {"error": str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
@@ -300,7 +299,6 @@ class ValidateLicenseView(APIView):
         user_with_license = User.objects.filter(license_key=license_key).first()
         
         if not user_with_license:
-            # [修复] 许可证不存在 (404) - 直接返回错误
             return Response(
                 {"error": "许可证不存在"}, 
                 status=status.HTTP_404_NOT_FOUND
@@ -312,17 +310,14 @@ class ValidateLicenseView(APIView):
         # 未激活 -> 401
         if not getattr(user_with_license, "license_active", False):
             response_data["error"] = "许可证未激活"
-            # [修复] 返回包含许可证信息的 401 响应
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     
         # 已过期 -> 402
         if is_expired:
             response_data["error"] = "许可证已过期"
-            # [修复] 返回包含许可证信息的 402 响应
             return Response(response_data, status=402)  # DRF 没有 HTTP_402 常量
     
         # 有效且未过期 -> 200
-        # [修复] 成功时只返回 200 OK
         return Response(response_data, status=status.HTTP_200_OK)
 
     def _parse_request_data(self, request):
@@ -355,7 +350,7 @@ class ValidateLicenseView(APIView):
         [修改] 构建标准化响应字典。
         这个函数现在只返回一个字典，而不是一个 Response 对象。
         """
-        # 确保 license_user 不为 None (虽然在这个新逻辑中，它总不为 None)
+        # 确保 license_user 不为 None
         if not license_user:
              # 这是一个备用措施，理论上不应该被触发
             return {"valid": False, "expired": True, "error": "内部错误：用户信息丢失"}

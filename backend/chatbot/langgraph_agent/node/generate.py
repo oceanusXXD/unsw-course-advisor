@@ -3,8 +3,9 @@ from typing import Dict, Any, Optional, Iterator
 import random
 import time
 from core import TOOL_REGISTRY, USE_FAST_ROUTER, ROUTING_MODEL_URL, ROUTING_MODEL_NAME, ROUTING_MODEL_KEY, QWEN_MODEL, ENABLE_VERBOSE_LOGGING, call_qwen_sync
-import threading
-import os
+
+from prompt_loader import load_prompts
+
 model = QWEN_MODEL
 base_url = ROUTING_MODEL_URL if USE_FAST_ROUTER and ROUTING_MODEL_URL and ROUTING_MODEL_NAME else None
 api_key = ROUTING_MODEL_KEY if USE_FAST_ROUTER and ROUTING_MODEL_KEY else None
@@ -97,65 +98,6 @@ def _string_to_llm_stream(text: str) -> Iterator[str]:
         # 随机暂停时间，0.02~0.2秒之间，可调节
         time.sleep(random.uniform(0.02, 0.2))
 
-# --- 【新增】Prompt 加载与缓存逻辑 ---
-_PROMPTS_CACHE = None
-_PROMPTS_LOCK = threading.Lock()
-# 定义配置文件的路径 (与此文件在同一目录下)
-PROMPT_FILE_PATH = os.path.join(os.path.dirname(__file__), ".prompts.json")
-
-def load_prompts() -> Dict[str, str]:
-    """
-    加载并缓存 .prompts.json 文件。
-    在 Python 端处理 CORE_PERSONA 的替换。
-    """
-    global _PROMPTS_CACHE
-    # 1. 检查缓存 (无锁)
-    if _PROMPTS_CACHE is not None:
-        return _PROMPTS_CACHE
-
-    # 2. 加锁
-    with _PROMPTS_LOCK:
-        # 3. 再次检查缓存 (防止竞态)
-        if _PROMPTS_CACHE is not None:
-            return _PROMPTS_CACHE
-
-        try:
-            if ENABLE_VERBOSE_LOGGING:
-                print(f"Loading prompts from {PROMPT_FILE_PATH}")
-                
-            with open(PROMPT_FILE_PATH, 'r', encoding='utf-8') as f:
-                templates = json.load(f)
-            
-            core_persona = templates.get("CORE_PERSONA", "AI助手")
-            
-            # 4. 手动执行模板替换
-            processed_prompts = {
-                # RAG 模板保留 {context_str} 占位符
-                "RETRIEVED_PROMPT_TEMPLATE": templates.get("RETRIEVED_PROMPT_TEMPLATE", ""),
-                
-                # 其他模板替换 {CORE_PERSONA}
-                "NEEDS_CLARIFICATION_PROMPT": templates.get("NEEDS_CLARIFICATION_PROMPT_TEMPLATE", "").format(CORE_PERSONA=core_persona),
-                
-                "GENERAL_CHAT_PROMPT": templates.get("GENERAL_CHAT_PROMPT_TEMPLATE", "").format(CORE_PERSONA=core_persona),
-                
-                "DEFAULT_PROMPT": templates.get("DEFAULT_PROMPT_TEMPLATE", "").format(CORE_PERSONA=core_persona)
-            }
-
-            # 5. 存入缓存
-            _PROMPTS_CACHE = processed_prompts
-            return _PROMPTS_CACHE
-
-        except Exception as e:
-            if ENABLE_VERBOSE_LOGGING:
-                print(f"❌ ERROR: Failed to load prompts from {PROMPT_FILE_PATH}: {e}")
-            # 返回一个安全的兜底值
-            _PROMPTS_CACHE = {
-                "RETRIEVED_PROMPT_TEMPLATE": "请基于以下信息回答：\n{context_str}",
-                "NEEDS_CLARIFICATION_PROMPT": "你的问题不够清晰，请详细说明。",
-                "GENERAL_CHAT_PROMPT": "你好，有什么可以帮你的吗？",
-                "DEFAULT_PROMPT": "你好，请问有什么可以帮到你？"
-            }
-            return _PROMPTS_CACHE
 def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     生成答案。
@@ -166,7 +108,6 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
     route = state.get("route")
 
     # --- 情况 1: generate_selection ---
-    # (这部分逻辑保持不变)
     if route == "call_tool":
         parsed = _parse_last_tool_message(messages)
         if parsed and isinstance(parsed, dict):
@@ -182,19 +123,14 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
                     return {"answer": _string_to_llm_stream(answer_text)}
 
     # --- 情况 2: 插件安装成功 ---
-    # (这部分逻辑保持不变)
     if route == "call_tool" and contains_successful_plugin_installation(messages):
         if ENABLE_VERBOSE_LOGGING:
             print("[Plugin Install Detector] 插件安装成功，返回固定提示。")
         answer_text = "插件安装成功！您现在可以使用这个插件了。"
         return {"answer": _string_to_llm_stream(answer_text)}
 
-    # ==========================================================
-    # --- 其余：构建 system_prompt 并调用 LLM ---
-    # 【重大修改】从 .prompts.json 加载提示词
-    # ==========================================================
     
-    # 【新增】加载缓存的 prompts
+    # 从 prompt_loader 导入 load_prompts()
     prompts = load_prompts()
     
     system_prompt = ""
@@ -204,7 +140,7 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
             for i, doc in enumerate(retrieved) if doc
         ])
         
-        # 【修改】使用 .format() 填充占位符
+        # 动态加载器会提供 'RETRIEVED_PROMPT_TEMPLATE' 键
         system_prompt = prompts["RETRIEVED_PROMPT_TEMPLATE"].format(
             context_str=context_str
         )
@@ -213,20 +149,14 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
             print("检索到的内容：", context_str)
     
     elif route == "needs_clarification":
-        # 【修改】使用加载的 prompt
         system_prompt = prompts["NEEDS_CLARIFICATION_PROMPT"]
     
     elif route == "general_chat":
-        # 【修改】使用加载的 prompt
         system_prompt = prompts["GENERAL_CHAT_PROMPT"]
     
     else:
-        # 【修改】使用加载的 prompt
         system_prompt = prompts["DEFAULT_PROMPT"]
 
-    # ==========================================================
-    # (后续逻辑保持不变)
-    # ==========================================================
 
     if ENABLE_VERBOSE_LOGGING:
         print("message:", messages)

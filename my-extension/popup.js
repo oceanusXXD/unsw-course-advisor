@@ -44,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const unswEnrollBtn = document.getElementById("unsw-enrollBtn");
   const unswStatusEl = document.getElementById("unsw-status"); // 用于选课的状态
   const unswPageWarning = document.getElementById("unsw-pageWarning");
-  // [!!] 修复: 添加对课程列表文本框的引用
   const unswCoursePairsInput = document.getElementById("unsw-course-pairs");
 
   // --- 状态变量 ---
@@ -56,9 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // 初始禁用选课按钮
   if (unswEnrollBtn) unswEnrollBtn.disabled = true;
 
-  // ============================================
-  // --- [!!] 新增：视图导航函数 ---
-  // ============================================
   function navigateTo(viewName) {
     if (appContainer) {
       appContainer.setAttribute("data-view", viewName);
@@ -77,8 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message));
         } else if (response && response.ok === false) {
-          // [!!] 修复:
-          // 尝试从多个可能的字段中提取错误消息
           const errorMsg =
             response.error ||
             (response.data && response.data.error) || // 备用
@@ -174,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ============================================
   // --- 许可证验证（委托 background）---
-  // [!!] 修复: 此函数现在会在验证失败时自动登出
   // ============================================
   async function validateAndDisplayLicense(licenseKey) {
     showLicenseLoading(
@@ -516,7 +509,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   unswEnrollBtn.addEventListener("click", async () => {
-    // [!!] 修复: 确保 unswCoursePairsInput 存在
     if (!unswCoursePairsInput) {
       unswShowStatus("错误: 课程输入框未找到", "error");
       return;
@@ -582,7 +574,6 @@ document.addEventListener("DOMContentLoaded", () => {
       unswShowStatus("✅ 选课流程已启动，后台将继续处理", "success");
     } catch (error) {
       console.error("批量选课流程失败:", error);
-      // [!!] 此处逻辑正确：正确显示了 error.message
       unswShowStatus("执行失败: " + (error.message || error), "error");
     } finally {
       showLoading(unswEnrollBtn, false);
@@ -621,7 +612,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 工具 / UI 函数 ---
   // ============================================
 
-  // [!!] 修复: 移除了错误的 data-view 设置和多余的 style.display
   function initializeTabs() {
     const tabBtns = Array.from(document.querySelectorAll(".tab-btn"));
     const tabContents = Array.from(document.querySelectorAll(".tab-content"));
@@ -640,7 +630,6 @@ document.addEventListener("DOMContentLoaded", () => {
           el.classList.remove("active");
         }
       });
-      // [!!] 移除: 错误设置 data-view 的行
       if (save) {
         try {
           chrome.storage.local.set({ popupActiveTab: tabId });
@@ -671,7 +660,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // [!!] 修复: 完整实现 showLoading
   function showLoading(btn, isLoading) {
     if (!btn) return;
     btn.disabled = isLoading;
@@ -688,7 +676,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // [!!] 修复: 完整实现 Header 加载状态
   function showLicenseLoading(
     isLoading,
     container,
@@ -708,7 +695,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // [!!] 修复: 完整实现 Header 许可证信息显示 (并在失败时触发登出)
+  //  Header 许可证信息显示 (并在失败时触发登出)
   function displayLicenseInfo(
     data, // { license_active, expired, license_expires_at, error }
     container,
@@ -724,9 +711,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data || !data.license_active || data.expired) {
       statusEl.textContent = data.expired ? "已过期" : "无效";
       expiryEl.textContent = "请重新登录";
-      // (可选：添加 CSS 类 .error)
-
-      // [!!] 关键: 主视图检测到许可证失效，自动登出
       setTimeout(logoutAndGoToLogin, 1500); // 延迟登出，让用户看到提示
       return;
     }
@@ -737,7 +721,6 @@ document.addEventListener("DOMContentLoaded", () => {
       : "";
   }
 
-  // [!!] 修复: 完整实现 UserKey 视图的信息显示
   function displayVerifiedLicenseInfo(
     data, // { license_active, expired, license_expires_at }
     statusEl,

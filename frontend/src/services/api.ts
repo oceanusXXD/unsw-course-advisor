@@ -122,29 +122,22 @@ export async function _makeRequest(
               try {
                 const data = JSON.parse(payload);
 
-                // [!! 修正] 调整此处的逻辑
                 if (data?.type === "token") {
-                  onToken?.(data.data); // 假设 data.data 是字符串
+                  onToken?.(data.data);
                 } else if (data?.type === "sources") {
                   onSources?.(data.data);
                 } else if (data?.type === "history") {
-                  // [!! 修正] (修复问题 1)
-                  // 不将 "history" 元数据作为 Token 发送到 UI
                   console.log("[API Stream] History event received.");
                 } else {
-                  // [!! 修正] (修复问题 2: [object Object])
-                  // 不将未知对象作为 Token 发送
                   console.warn(
                     "[API Stream] Received unknown data structure:",
                     data,
                   );
                 }
               } catch {
-                // 回退：如果 JSON 解析失败，则发送原始负载（字符串）
                 onToken?.(payload);
               }
             } else {
-              // [!! 修正] 同样处理非 "data:" 开头的行
               try {
                 const data = JSON.parse(trimmed);
                 if (data?.type === "token") {
@@ -152,7 +145,6 @@ export async function _makeRequest(
                 } else if (data?.type === "sources") {
                   onSources?.(data.data);
                 } else {
-                  // [!! 修正] (修复问题 2: [object Object])
                   console.warn(
                     "[API Stream] Received unknown non-data structure:",
                     data,
