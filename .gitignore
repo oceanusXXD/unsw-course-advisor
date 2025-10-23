@@ -181,5 +181,5 @@ subject1.txt
 # Abstra
 .abstra/
 
-
+*extension
 *.exe

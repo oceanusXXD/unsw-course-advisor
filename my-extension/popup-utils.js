@@ -1,6 +1,9 @@
-// popup-utils.js
+// popup-utils.js (完整版 - 工具函数)
 
+// ============================================
 // --- 加密/解密辅助函数 ---
+// ============================================
+
 function base64ToUint8Array(base64) {
   const cleaned = base64.replace(/-/g, "+").replace(/_/g, "/");
   const pad =
@@ -66,8 +69,10 @@ async function decryptFileContent(encryptedFileContent, fileKeyBytes) {
   return JSON.parse(decryptedText);
 }
 
+// ============================================
 // --- UI 辅助函数 ---
-// 注意：这些函数依赖于在主 popup.js 中定义的元素变量
+// ============================================
+
 function navigateTo(viewName) {
   const appContainer = document.getElementById("app-container");
   if (appContainer) appContainer.setAttribute("data-view", viewName);
@@ -78,10 +83,10 @@ function showLoading(button, isLoading) {
   const spinner = button.querySelector(".spinner");
   if (isLoading) {
     if (btnText) btnText.style.display = "none";
-    if (spinner) spinner.style.display = "block";
+    if (spinner) spinner.style.display = "inline-block";
     button.disabled = true;
   } else {
-    if (btnText) btnText.style.display = "block";
+    if (btnText) btnText.style.display = "inline-block";
     if (spinner) spinner.style.display = "none";
     button.disabled = false;
   }
@@ -164,7 +169,7 @@ function showLicenseLoading(
     licenseInfoDiv.style.display = "flex";
     licenseStatusSpan.textContent = "正在验证...";
     licenseExpirySpan.textContent = "...";
-    licenseSpinner.style.display = "block";
+    licenseSpinner.style.display = "inline-block";
   } else {
     licenseSpinner.style.display = "none";
   }
@@ -190,7 +195,10 @@ function displayVerifiedLicenseInfo(
   verifiedLicenseExpiry.textContent = expiryText;
 }
 
-// --- UNSW 辅助 ---
+// ============================================
+// --- UNSW 辅助函数 ---
+// ============================================
+
 function unswShowStatus(message, type) {
   const unswStatusEl = document.getElementById("unsw-status");
   if (!unswStatusEl) return;
@@ -200,11 +208,14 @@ function unswShowStatus(message, type) {
   if (type === "success") {
     setTimeout(() => {
       if (unswStatusEl) unswStatusEl.style.display = "none";
-    }, 3000);
+    }, 5000);
   }
 }
 
+// ============================================
 // --- 标签页切换逻辑 ---
+// ============================================
+
 function initializeTabs() {
   const tabButtons = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -215,9 +226,12 @@ function initializeTabs() {
 
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
+      // 移除所有激活状态
       tabButtons.forEach((btn) => btn.classList.remove("active"));
-      button.classList.add("active");
       tabContents.forEach((content) => content.classList.remove("active"));
+
+      // 激活当前标签
+      button.classList.add("active");
       const tabId = button.dataset.tab;
       const activeTabContent = document.getElementById(tabId);
       if (activeTabContent) {
@@ -227,7 +241,10 @@ function initializeTabs() {
   });
 }
 
+// ============================================
 // --- 文件读取辅助 ---
+// ============================================
+
 function readFileAsText(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
