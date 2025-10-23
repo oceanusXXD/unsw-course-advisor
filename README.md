@@ -1,5 +1,7 @@
 # UNSW 课程顾问 🤖🎓
 
+[详细项目介绍](./document/project_summary.md)
+
 [English](./document/README_EN.md) | [Deutsch](COMING SOON) | [日本語](COMING SOON) | [Español](COMING SOON)
 
 ---
