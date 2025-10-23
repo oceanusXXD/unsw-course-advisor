@@ -219,29 +219,28 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
             final_answer = str(output_stream)
             yield {"type": "token", "data": final_answer}
             
-        # ==========================================================
-        # ==== 修复结束 ====
-        # ==========================================================
-
-
-        # ==== 输出完整历史 ====
-        # (这部分逻辑保持不变)
         final_history = messages + [{"role": "assistant", "content": final_answer}]
         yield {"type": "history", "data": final_history}
-
-        # ==== 保存最终结果 ====
-        # (这部分逻辑保持不变)
         if node_save_memory:
             try:
                 state_for_save = {
-                    "messages": final_history,
-                    "query": query,
-                    "user_id": user_id,
-                    "route": result.get("route", "general_chat"),
-                    "answer": final_answer,
-                    "memory": result.get("memory", {}) or {},
-                    "is_grounded": result.get("is_grounded", True),
-                }
+                      "messages": final_history,
+                      "query": query,
+                      "user_id": user_id,
+                      "route": result.get("route", "general_chat"),
+                      "answer": final_answer,
+                                
+                                # 【修改】我们不再传入旧的 memory 对象。
+                                # 我们只传入*当前*运行中我们想在 history entry 中记住的新信息。
+                      "memory": {
+                                    "route": result.get("route"),
+                                    "is_grounded": result.get("is_grounded")
+                                    # 你可以从 result 中添加任何其他想在 memory 字段中保留的 *新* 信息
+                                    # "retrieved_count": len(result.get("retrieved", [])) 
+                                },
+                                
+                      "is_grounded": result.get("is_grounded", True),
+                    }
                 if ENABLE_VERBOSE_LOGGING:
                     print("Calling node_save_memory with state:")
                 node_save_memory(state_for_save)
