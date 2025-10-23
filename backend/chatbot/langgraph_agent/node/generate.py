@@ -272,7 +272,6 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
             # 优先识别生成选课文件的场景
             generated_by = parsed.get("data", {}).get("meta", {}).get("generated_by") or parsed.get("generated_by")
             if generated_by == "generate_selection":
-                # 可能位于 parsed['data']['encrypted'] 或 parsed['encrypted']
                 encrypted = parsed.get("data", {}).get("encrypted") or parsed.get("encrypted") or parsed.get("data", {}).get("meta", {}).get("encrypted")
                 if isinstance(encrypted, dict):
                     url = encrypted.get("url")
@@ -286,7 +285,7 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
                     answer_text = "好的，已生成选课结果，但尚未生成加密文件（encrypted.url 未返回）。"
                     return {"answer": _string_to_llm_stream(answer_text)}
 
-        # 插件安装成功检测（使用你已有的函数作为补充）
+        # 插件安装成功检测
         if contains_successful_plugin_installation(messages):
             if ENABLE_VERBOSE_LOGGING:
                 print("[Plugin Install Detector] 插件安装成功，返回固定提示。")
