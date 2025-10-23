@@ -14,7 +14,7 @@ from .views import (
     GetFileDecryptKeyView,
     GetCourseMapView
 )
-
+# check
 app_name = 'accounts'
 
 urlpatterns = [

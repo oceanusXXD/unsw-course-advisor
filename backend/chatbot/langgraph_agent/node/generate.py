@@ -92,7 +92,7 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
                     # 没有加密 URL 的兜底提示
                     return {"answer": "好的，已生成选课结果，但尚未生成加密文件（encrypted.url 未返回）。请稍后重试或联系管理员。"}
 
-    # --- 情况 2: 插件安装成功（保留原有逻辑） ---
+    # --- 情况 2: 插件安装成功 ---
     if route == "call_tool" and contains_successful_plugin_installation(messages):
         if ENABLE_VERBOSE_LOGGING:
             print("[Plugin Install Detector] 插件安装成功，返回固定提示。")

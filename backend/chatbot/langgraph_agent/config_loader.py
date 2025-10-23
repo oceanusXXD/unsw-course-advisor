@@ -9,7 +9,7 @@ import importlib
 import inspect
 import sys
 
-# node 包的名称
+# node包
 NODE_PKG = "node"
 AGENT_DIR = os.path.dirname(__file__)
 if AGENT_DIR not in sys.path:
@@ -53,11 +53,8 @@ def _import_node_by_id(node_id: str) -> Callable:
       3) 抛错
     支持 importlib.reload，方便开发时热更新。
     """
-    # *** 注意 ***:
-    # 这里的导入逻辑是基于 YAML 中没有提供 function 字段的情况。
-    # 根据你提供的 YAML 文件，所有节点都指定了完整的 function 路径，
-    # 所以这个函数实际上不会被调用。但我们依然保持其正确性。
-    mod_name = f"{NODE_PKG}.{node_id}" # 这会变成 "node.load_memory"
+    # 仅当yaml中node未指定function时调用
+    mod_name = f"{NODE_PKG}.{node_id}"
     try:
         # 支持热加载（若已加载则 reload）
         if mod_name in sys.modules:
@@ -81,7 +78,6 @@ def _import_node_by_id(node_id: str) -> Callable:
 
 def load_graph_from_config(config_path: str, ChatState, monitor_wrapper: Optional[Callable]=None):
     """
-    以更灵活的方式加载 nodes：
       - 先尝试 YAML 中的 function 字段（点分路径）
       - 否则按 node id 去 node 包中加载 ./node/{id}.py
     monitor_wrapper: 传入 monitor_performance 工厂以动态包裹节点（monitor_wrapper(node_id) -> decorator）
@@ -101,7 +97,7 @@ def load_graph_from_config(config_path: str, ChatState, monitor_wrapper: Optiona
         if func_spec:
             try:
                 fn = _import_function(func_spec)
-            except Exception as e: # 捕获所有异常，继续尝试按约定导入
+            except Exception as e:
                 print(f"Warning: Failed to import function '{func_spec}' for node '{node_id}'. Error: {e}")
                 fn = None
 

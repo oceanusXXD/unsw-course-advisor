@@ -1,31 +1,39 @@
-# views.py — 完整文件（基于你给的版本，GetFileDecryptKeyView 已修改以优先使用 DB）
-import json
-import logging
-import base64
-import uuid
-from typing import Any, Dict
-from datetime import timedelta
+# views.py
 import os
+import json
+import uuid
+import base64
+import logging
+from datetime import timedelta
+from typing import Any, Dict
+
+from dotenv import load_dotenv
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Protocol.KDF import PBKDF2
+
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from .email_utils import send_license_email
+
 from rest_framework import generics, status
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import AllowAny
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-from accounts.models import FileKey
-from accounts.services import CryptoService
+
 from .models import User
-from .serializers import RegisterSerializer, LoginSerializer, LicenseActivateSerializer
-from dotenv import load_dotenv
-# 加载环境变量
+from .serializers import (
+    RegisterSerializer,
+    LoginSerializer,
+    LicenseActivateSerializer,
+)
+from .email_utils import send_license_email
+from .services import CryptoService
+from accounts.models import FileKey
+
 load_dotenv()
+# check
 
 # 配置日志
 logging.basicConfig(
@@ -232,8 +240,8 @@ class ActivateLicenseView(APIView):
             return Response({"error": "生成 user_key 失败", "details": str(e)},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # 默认有效期（可修改）：365 天
-        expires_at = timezone.now() + timedelta(days=365)
+        # 默认有效期（可修改）：31 天
+        expires_at = timezone.now() + timedelta(days=31)
 
         try:
             # 将许可证信息写入 User 表（单表方案）
@@ -342,7 +350,7 @@ class GetFileDecryptKeyView(APIView):
     获取经用户 user_key 加密的文件密钥 (file_key)
     通过 license_key 识别用户，无需预先认证
     """
-    permission_classes = [AllowAny]  # 改为允许匿名访问
+    permission_classes = [AllowAny]
 
     def post(self, request):
         # 1. 获取前端传入的参数
@@ -358,7 +366,7 @@ class GetFileDecryptKeyView(APIView):
         if not file_id:
             return Response({"error": "加密文件中缺少 'file_id'"}, status=400)
 
-        # 2. 通过 license_key 查找用户（替代 request.user）
+        # 2. 通过 license_key 查找用户
         try:
             user = User.objects.get(license_key=license_key)
         except User.DoesNotExist:
@@ -442,7 +450,6 @@ def resolve_course_map_path(env_path):
     """
     if not env_path:
         return None
-    # 展开 ~ 并转为绝对路径
     env_path = os.path.expanduser(env_path)
     return os.path.abspath(env_path)
 
@@ -466,7 +473,7 @@ class GetCourseMapView(APIView):
 
     def get(self, request):
         keys_param = request.GET.get("keys", "")
-        term_filter = request.GET.get("term", "").strip()  # 可传 "T1"/"T2"/"T3" 或 "t1"
+        term_filter = request.GET.get("term", "").strip()
         if not keys_param:
             return Response({"success": False, "error": "缺少 keys 参数"}, status=400)
 

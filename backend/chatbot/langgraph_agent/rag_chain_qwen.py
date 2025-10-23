@@ -90,7 +90,7 @@ class APIEmbeddingModel:
         if n == 0:
             return np.zeros((0, self.dim), dtype=np.float32) if convert_to_numpy else []
 
-        # outer batch 尺寸由外部决定（用于控制内存），但我们会在内部把 outer_chunk 拆成 self.call_batch 大小向 API 请求
+        # outer batch 尺寸由外部决定（用于控制内存），但会在内部把 outer_chunk 拆成 self.call_batch 大小向 API 请求
         outer_batch = int(batch_size) if batch_size else n
 
         embeddings = []
@@ -173,7 +173,6 @@ def load_faiss_and_metadata(index_path: str = FAISS_INDEX_PATH, meta_path: str =
                 try:
                     _metadata.append(json.loads(line))
                 except Exception:
-                    # 忽略损坏行
                     continue
     return _faiss_index, _metadata
 
@@ -202,7 +201,7 @@ def embed_query(query: str) -> np.ndarray:
     # 如果返回 shape 为 (dim,) -> reshape
     if emb.ndim == 1:
         emb = emb.reshape(1, -1)
-    # 如果返回多行，取第一行（因为我们只传入了一条）
+    # 如果返回多行，取第一行
     if emb.shape[0] >= 1:
         q_emb = emb[0:1]
     else:
@@ -296,7 +295,7 @@ def retrieve(query: str, top_k: int = DEFAULT_TOP_K) -> List[Dict[str, Any]]:
         results.append(m)
         seen_idx.add(idx)
 
-    # code 优先插入逻辑（与原版一致）
+    # code 优先插入逻辑
     code = extract_course_code_from_query(query)
     if code:
         found = get_doc_by_course_code(code, metadata)

@@ -98,8 +98,6 @@ def node_crypto(state: Dict[str, Any]) -> Dict[str, Any]:
             "tag": encrypted_content["tag"],
             "ciphertext": encrypted_content["ciphertext"],
             "notice": "此文件需要有效的许可证才能解密"
-            # 可选扩展（若走路径B）：在返回中加入用 user_key 包裹的 file_key
-            # "fk": { "nonce": "...", "tag": "...", "ciphertext": "..." }
         }
 
         # 7. 保存到文件系统

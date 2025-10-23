@@ -1,7 +1,7 @@
 # backend/accounts/email_utils.py
 from django.core.mail import send_mail
 from django.conf import settings
-
+# Unused​
 def send_license_email(email: str, license_key: str):
     """发送许可证密钥邮件"""
     subject = "您的课程顾问系统许可证密钥"

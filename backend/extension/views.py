@@ -135,15 +135,15 @@ def launch_and_check_extension(request):
         if not ext_id:
             raise RuntimeError("安装后，无法在 chrome://extensions 页面上找到插件。")
 
-        # ✅ 修改部分：如果能找到插件，就认为安装成功，直接返回
+        # 如果能找到插件，就认为安装成功，直接返回
         result["status"] = "ok"
         result["detail"] = {"extension_id": ext_id, "message": f"插件 {TARGET_EXTENSION_NAME} 安装成功"}
         result["browser_logs"] = _dump_browser_logs(driver)
 
-        # ✅ 不再打开内部页面
+        # 不再打开内部页面
         return JsonResponse(result, json_dumps_params={'ensure_ascii': False, 'indent': 2})
 
-        # （原逻辑）
+        # 保留
         target_url = f"chrome-extension://{ext_id}/{EXTENSION_INTERNAL_PAGE}"
         driver.get(target_url)
         result["opened_url"] = target_url

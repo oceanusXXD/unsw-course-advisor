@@ -7,7 +7,7 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Protocol.KDF import PBKDF2
 from dotenv import load_dotenv
-
+# check
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -82,14 +82,13 @@ class CryptoService:
             "encrypted_key": base64.b64encode(encrypted_key).decode()
         }
 
-    @classmethod  # <--- 1. 将 @staticmethod 改为 @classmethod
+    @classmethod
     def decrypt_file_key(cls, encrypted_key_package: Dict[str, bytes]) -> bytes:
         """用服务器主密钥解密文件密钥"""
 
-        # 2. ✅ 使用和加密时完全相同的函数来获取主密钥
+        # 2. 使用和加密时完全相同的函数来获取主密钥
         master_key = cls.get_server_master_key()
 
-        # 3. 后续逻辑保持不变
         nonce = encrypted_key_package["nonce"]
         tag = encrypted_key_package["tag"]
         ciphertext = encrypted_key_package["encrypted_key"]

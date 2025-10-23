@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.utils import timezone
 from .models import User, FileKey
-
+# check
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -37,7 +37,7 @@ class UserAdmin(BaseUserAdmin):
         ('敏感信息', {
             'fields': ('user_key',),
             'classes': ('collapse',),
-            'description': '⚠️ 用户密钥是敏感信息，请勿随意修改'
+            'description': '用户密钥是敏感信息，请勿随意修改'
         }),
         ('时间信息', {
             'fields': ('date_joined', 'last_login'),
@@ -128,7 +128,7 @@ class FileKeyAdmin(admin.ModelAdmin):
         ('加密数据', {
             'fields': ('nonce', 'tag', 'encrypted_key'),
             'classes': ('collapse',),
-            'description': '⚠️ 这些是加密后的密钥数据，请勿随意修改'
+            'description': '这些是加密后的密钥数据，请勿随意修改'
         }),
         ('时间信息', {
             'fields': ('created_at', 'updated_at'),
