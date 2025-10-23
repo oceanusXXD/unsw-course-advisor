@@ -1,4 +1,3 @@
-# parse_search_htmls.py
 from bs4 import BeautifulSoup
 import json
 import glob
@@ -6,13 +5,13 @@ import re
 import os
 
 # 匹配 course_id 并解析 termcode/term/section
-# 假设 pattern: <prefix><termcode(4digits)>T<termnum(1digit)><section(1digit)>
+# pattern: <prefix><termcode(4digits)>T<termnum(1digit)><section(1digit)>
 RE_COURSE = re.compile(r'^(?P<prefix>\d+?)(?P<termcode>\d{4})T(?P<termnum>\d)(?P<section>\d)$')
 
 html_files = sorted(glob.glob("./search*.html"))
 
 if not html_files:
-    print("⚠️ 未找到任何 search*.html 文件")
+    print("未找到任何 search*.html 文件")
     exit(1)
 
 course_map = {}  # 结构: { "ACCT5910": [ {course_id:..., termcode:..., term: "T1", section:...}, ... ] }
@@ -28,7 +27,7 @@ for file_path in html_files:
     for row in rows:
         code_cell = row.select_one("td:nth-child(1)")
         input_tag = row.select_one('input[name="courses[]"], input[name="selectCourses[]"], input[type="checkbox"]')
-        # 上面 selector 兼容 courses[] 或 selectCourses[] 等
+        # 兼容 courses[] 或 selectCourses[] 等
         if code_cell and input_tag:
             course_code = code_cell.get_text(strip=True)
             course_id = input_tag.get("value", "").strip()
@@ -66,7 +65,7 @@ for file_path in html_files:
                 course_map[course_code].append(entry)
 
 # 输出结果
-print(f"✅ 共解析到 {len(course_map)} 门课程（含多学期条目）：")
+print(f"共解析到 {len(course_map)} 门课程（含多学期条目）：")
 print(json.dumps(course_map, indent=2, ensure_ascii=False))
 
 # 保存到文件
@@ -74,4 +73,4 @@ out_path = "course_map.json"
 with open(out_path, "w", encoding="utf-8") as f:
     json.dump(course_map, f, indent=2, ensure_ascii=False)
 
-print(f"\n📁 已保存到 {os.path.abspath(out_path)}")
+print(f"\n已保存到 {os.path.abspath(out_path)}")

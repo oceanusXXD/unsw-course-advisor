@@ -138,7 +138,7 @@ def main():
         json.dump(results, f, ensure_ascii=False, indent=2)
 
     succ = sum(1 for r in results if r.get("success"))
-    print(f"✅ 抓取完成，共 {len(results)} 条，成功 {succ} 条。结果已保存到 {OUTPUT_DIR}")
+    print(f"抓取完成，共 {len(results)} 条，成功 {succ} 条。结果已保存到 {OUTPUT_DIR}")
 
 if __name__ == "__main__":
     main()

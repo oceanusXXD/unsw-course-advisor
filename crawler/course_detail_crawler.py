@@ -59,16 +59,13 @@ USER_AGENTS = [
     "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
 ]
 
-# 你原脚本中 JSON/DOM 解析函数保持不变——下方类中复用你的实现
-# ===========================
-
 
 class UNSWHandbookScraper:
     def __init__(self, request_timeout: int = REQUEST_TIMEOUT):
         self.session = requests.Session()
         self.request_timeout = request_timeout
 
-    # ----------------- 原你脚本里的 JSON 抽取 / DOM 回退方法（保持逻辑不变） -----------------
+    # ----------------- JSON 抽取 / DOM 回退方法 -----------------
     def _extract_embedded_json(self, html: str) -> Optional[Dict[str, Any]]:
         soup = BeautifulSoup(html, "html.parser")
         scripts = soup.find_all("script")
@@ -206,7 +203,7 @@ class UNSWHandbookScraper:
                         return txt
         return ""
 
-    # ----------------- 新增：请求封装（随机 UA / 重试 / backoff） -----------------
+    # ----------------- 随机 UA / 重试 / backoff -----------------
     def _get_with_retries(self, url: str, course_code_hint: str = "", max_retry: int = MAX_RETRY) -> Optional[str]:
         """
         使用随机 UA、随机 Referer、重试与指数退避获取页面 HTML。
@@ -218,7 +215,7 @@ class UNSWHandbookScraper:
                 "https://www.google.com/",
                 "https://www.bing.com/",
                 "https://www.handbook.unsw.edu.au/",
-                url  # 有时直接用自身 URL 也行
+                url  # 用自身 URL
             ])
             headers = {
                 "User-Agent": ua,
@@ -253,14 +250,14 @@ class UNSWHandbookScraper:
         print(f"[ERROR] 达到最大重试次数，放弃 {course_code_hint or url}")
         return None
 
-    # ----------------- 主抓取函数（与原脚本 scrape_course 逻辑一致，但用 _get_with_retries） -----------------
+    # ----------------- 主抓取函数 -----------------
     def scrape_course(self, course_code: str, url_override: Optional[str] = None) -> Optional[Dict[str, Any]]:
         url = url_override or f"{BASE_URL}/postgraduate/courses/2026/{course_code}"
         html = self._get_with_retries(url, course_code_hint=course_code)
         if not html:
             return None
 
-        # 解析逻辑与原脚本一致
+        # 解析逻辑
         parsed_json = self._extract_embedded_json(html)
         if parsed_json:
             course_obj = self._find_course_obj_in_json(parsed_json, course_code)

@@ -73,9 +73,9 @@ def fetch_all_pages(subject, year="2026"):
                     if url_map:
                         urls.append("https://www.handbook.unsw.edu.au" + url_map)
 
-            print(f"  ✅ {level}: 已获取 {len(urls)} 条 (offset={offset})")
+            print(f"{level}: 已获取 {len(urls)} 条 (offset={offset})")
             offset += limit
-            time.sleep(0.2)  # 保持礼貌延时
+            time.sleep(0.2)  # 延时
 
         all_data[level] = urls
 
@@ -106,7 +106,7 @@ def main():
             try:
                 data = future.result()
                 results[subj] = data
-                print(f"✅ {subj}: UG={len(data['undergraduate'])}, "
+                print(f"{subj}: UG={len(data['undergraduate'])}, "
                       f"PG={len(data['postgraduate'])}, "
                       f"RS={len(data['research'])}")
             except Exception as e:

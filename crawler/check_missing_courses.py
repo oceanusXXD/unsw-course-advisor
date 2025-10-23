@@ -17,7 +17,7 @@ from typing import Dict, List, Set
 
 DATA_DIR = "./data"
 ALL_SUBJECTS_FILE = os.path.join(DATA_DIR, "AALL_subjects_courses.json")
-CRAWLER_SCRIPT = "./course_detail_crawler.py"  # 你的爬虫脚本路径
+CRAWLER_SCRIPT = "./course_detail_crawler.py"
 LEVEL_ORDER = ["undergraduate", "postgraduate", "research"]
 
 def extract_course_code(url: str) -> str:
@@ -86,7 +86,7 @@ def main(auto_refetch: bool = True):
                 print(f"  ⚠️ 多余 {len(extra)} 门课程（可能旧数据未清理）：{extra}")
             summary[subj] = {"missing": missing, "extra": extra}
         else:
-            print(f"✅ {subj} 完整")
+            print(f"{subj} 完整")
 
     if total_missing == 0:
         print("\n🎉 所有学科课程详情均完整无缺！")
