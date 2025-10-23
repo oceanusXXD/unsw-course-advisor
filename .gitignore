@@ -182,3 +182,4 @@ subject1.txt
 .abstra/
 
 *.exe
+.prompts.json

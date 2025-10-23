@@ -1,16 +1,22 @@
+# node_router.py
+
 import json, uuid
 from typing import Dict, Any, Iterator
 from core import TOOL_REGISTRY, USE_FAST_ROUTER, ROUTING_MODEL_URL, ROUTING_MODEL_NAME, ROUTING_MODEL_KEY, QWEN_MODEL, ENABLE_VERBOSE_LOGGING, call_qwen_sync
 
+from .prompt_loader import load_prompts
+
+
+
 def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     根据用户问题进行路由决策。
-    每次迭代返回增量 JSON 字符串（与node_generate类似）。
+    （从 prompt_loader.py 加载提示词）
     """
     print("!!!!!!!!!!!!!!state in router:",state)
     query = state.get("query", "")
     
-    # 添加插件安装工具定义
+    # 添加插件安装工具定义 (逻辑不变)
     if "plugin_install" not in TOOL_REGISTRY:
         TOOL_REGISTRY["plugin_install"] = {
             "description": "当用户明确要求安装、更新或添加系统插件时使用此工具（无需参数）",
@@ -22,31 +28,17 @@ def node_router(state: Dict[str, Any]) -> Dict[str, Any]:
         for name, details in TOOL_REGISTRY.items()
     ], ensure_ascii=False)
 
-    prompt = f"""你是一个智能路由机器人。根据用户的问题，决定下一步的最佳行动。可用的行动如下：
-1. `retrieve_rag`: 当用户询问课程的具体信息，如先修课程、学分、课程代码、教学大纲(syllabus)等。
-2. `call_tool`: 当用户意图可以通过调用工具来完成时，特别是以下情况：
-   - 用户明确要求"安装插件"、"添加功能"或使用类似表述（使用 plugin_install 工具）
-   - 用户明确要求"帮我选课"，"生成选课结果"等（使用 generate_selection 工具）
-   - 用户请求可以通过其他工具完成的任务
-3. `general_chat`: 对于其他所有问题，如问候、常识性问题、自我介绍等。
-
-特别注意：当用户使用以下任何表述时，必须选择 call_tool 并使用 plugin_install 工具：
-- "安装插件"
-- "install plugin"
-- "plugin install"
-- "添加插件"
-- "add plugin"
-
-可用的工具如下:
-{tool_definitions}
-
-用户问题: "{query}"
-
-请只返回一个JSON对象，格式如下:
-- 如果选择 `retrieve_rag` 或 `general_chat`，返回: {{\"route\": \"行动名称\"}}
-- 如果选择 `call_tool`，返回: {{\"route\": \"call_tool\", \"tool_name\": \"工具名称\"}}
-  - 特别注意：plugin_install 工具不需要 tool_args 参数
-"""
+    prompts = load_prompts()
+    
+    # 2. 获取路由模板
+    router_template = prompts.get("ROUTER_PROMPT_TEMPLATE")
+    
+    # 3. 动态填充模板
+    prompt = router_template.format(
+        tool_definitions=tool_definitions,
+        query=query
+    )
+    # ==========================================================
 
     try:
         model = ROUTING_MODEL_NAME if USE_FAST_ROUTER and ROUTING_MODEL_URL and ROUTING_MODEL_NAME else QWEN_MODEL
