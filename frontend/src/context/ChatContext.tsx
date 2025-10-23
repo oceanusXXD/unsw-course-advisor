@@ -18,7 +18,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [chats, setChats] = useState<ChatItem[]>([]);
     const [currentChat, setCurrentChat] = useState<ChatItem | null>(null);
 
-    // 从 localStorage 恢复聊天记录
     useEffect(() => {
         const savedChats = localStorage.getItem("chats");
         if (savedChats) {
@@ -34,16 +33,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }))
                 }));
                 setChats(chatsWithDates);
-                if (chatsWithDates.length > 0) {
-                    setCurrentChat(chatsWithDates[0]);
-                }
             } catch (e) {
                 console.error("Failed to parse saved chats:", e);
             }
         }
     }, []);
 
-    // 辅助函数，只负责写入 localStorage
     const saveChatsToStorage = (newChats: ChatItem[]) => {
         localStorage.setItem("chats", JSON.stringify(newChats));
     };

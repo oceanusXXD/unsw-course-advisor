@@ -1,5 +1,3 @@
-// App.tsx
-
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import Chat from "./components/Chat/Chat";
 import LeftPanel from "./components/LeftPanel/LeftPanel";
@@ -10,12 +8,9 @@ import { ChatProvider } from "./context/ChatContext";
 import { imageUrls } from "./assets/assets";
 import "./index.css";
 
-// Import AppProvider and AppContext
 import { AppProvider, useAppContext } from "./context/AppContext";
-// Import the new settings page
 import SettingsPage from "./components/SettingsPage/SettingsPage";
 
-// --- Constants (unchanged) ---
 const RIGHT_PANEL_DEFAULT_WIDTH = 288;
 const RIGHT_PANEL_MIN_WIDTH = 240;
 const RIGHT_PANEL_MAX_WIDTH = 600;
@@ -23,10 +18,8 @@ const RESIZE_HANDLE_WIDTH = 12;
 const COLLAPSED_PANEL_WIDTH_PX = 56;
 
 const AppContent: React.FC = () => {
-  // Get current view from Context
   const { activeView } = useAppContext();
 
-  // --- State management (unchanged) ---
   const [leftPanelWidth, setLeftPanelWidth] = useState(280);
   const [results, setResults] = useState<ResultItem[]>([]);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
@@ -59,7 +52,6 @@ const AppContent: React.FC = () => {
   }, []);
 
   const toggleRightPanel = () => setIsRightPanelOpen((prev) => !prev);
-  //TODO
   const handleSources = (sourcesData: any[]) => {
   };
 
@@ -117,7 +109,7 @@ const AppContent: React.FC = () => {
       >
         <div
           ref={chatRef}
-          className="w-full h-screen overflow-y-auto py-4 px-2"
+          className="w-full py-4 px-2"
         >
           {activeView === "chat" && <Chat onSources={handleSources} />}
           {activeView === "settings" && <SettingsPage />}

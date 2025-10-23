@@ -1,5 +1,3 @@
-// src/components/Auth/AuthModal.tsx
-
 import React, { useState, useEffect } from "react";
 import { FiX, FiEye, FiEyeOff } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
@@ -23,12 +21,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setEmail("");
     setPassword("");
     setUsername("");
-    // 2. 重置“确认密码”
     setConfirmPassword("");
     setLocalError(null);
   };
 
-  // 监听认证状态变化
   useEffect(() => {
     if (authState.isLoggedIn) {
       onClose();
@@ -36,7 +32,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   }, [authState.isLoggedIn, onClose]);
 
-  // 监听错误变化
   useEffect(() => {
     setLocalError(error);
   }, [error]);
@@ -47,7 +42,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
     setLocalError(null);
 
-    // 基本验证
     if (!email) {
       setLocalError("Please enter your email");
       return;
@@ -60,8 +54,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setLocalError("Please enter your name");
       return;
     }
-
-    // 3. 添加密码匹配验证
     if (!isLogin && !confirmPassword) {
       setLocalError("Please confirm your password");
       return;
@@ -70,7 +62,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setLocalError("Passwords do not match");
       return;
     }
-    // 密码长度验证
     if (!isLogin && password.length < 6) {
       setLocalError("Password must be at least 6 characters");
       return;
@@ -80,7 +71,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (isLogin) {
         await login(email, password);
       } else {
-        // email, password, username
         await signup(email, password, username);
       }
     } catch (err) {
@@ -96,7 +86,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8 relative">
-        {/* 关闭按钮 */}
         <button
           onClick={() => {
             onClose();
@@ -108,7 +97,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <FiX size={20} />
         </button>
 
-        {/* 标题 */}
         <h2 className="text-2xl font-bold mb-2 text-gray-800">
           {isLogin ? "Sign In to Course advisor" : "Create Your Account"}
         </h2>
@@ -118,17 +106,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             : "Join Course advisor Chat to start exploring and chatting."}
         </p>
 
-        {/* 错误提示 */}
         {localError && (
-          // 样式微调，使其不那么刺眼
           <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm">
             {localError}
           </div>
         )}
 
-        {/* 表单 */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* 名字字段 (仅注册) */}
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -139,13 +123,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="John Doe"
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition disabled:bg-gray-100 text-gray-800"
                 disabled={isLoading}
               />
             </div>
           )}
 
-          {/* 邮箱字段 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
@@ -155,12 +138,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition disabled:bg-gray-100 text-gray-800"
               disabled={isLoading}
             />
           </div>
 
-          {/* 密码字段 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
@@ -171,7 +153,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition disabled:bg-gray-100 text-gray-800"
                 disabled={isLoading}
               />
               <button
@@ -190,7 +172,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* 5. 确认密码字段 (仅注册) */}
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -202,10 +183,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition disabled:bg-gray-100 text-gray-800"
                   disabled={isLoading}
                 />
-                {/* 同时控制两个密码框的可见性 */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -218,15 +198,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* 提交按钮 */}
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-2 bg-cyan-400 text-white font-semibold rounded-lg hover:bg-cyan-500 transition disabled:bg-gray-400 disabled:cursor-not-allowed ${isLogin ? "mt-6" : "mt-4"}`}
+            className={`w-full py-2 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-500 transition disabled:bg-gray-400 disabled:cursor-not-allowed ${isLogin ? "mt-6" : "mt-4"}`}
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span className="inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
                 Processing...
               </span>
             ) : isLogin ? (
@@ -237,21 +216,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </button>
         </form>
 
-        {/* 切换表单 */}
         <div className="mt-6 text-center">
           <p className="text-gray-600 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
               onClick={toggleMode}
               disabled={isLoading}
-              className="ml-2 text-cyan-400 font-semibold hover:underline disabled:opacity-50"
+              className="ml-2 text-yellow-600 font-semibold hover:underline disabled:opacity-50"
             >
-              {isLogin ? "Sign Up" : "Sign In"}_
+              {isLogin ? "Sign Up" : "Sign In"}
             </button>
           </p>
         </div>
 
-        {/* 提示 */}
         <div className="mt-6 pt-6 border-t border-gray-200">
           <p className="text-xs text-gray-400 text-center">
             🔐 Secure authentication powered by Course advisor
