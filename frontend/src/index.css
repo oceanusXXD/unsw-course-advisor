@@ -8,7 +8,7 @@ body,
   height: 100%;
 }
 
-/* ✅ 默认亮色主题 */
+/* 默认亮色主题 */
 @layer base {
   :root {
     --bg-color: #ffffff;
@@ -16,7 +16,7 @@ body,
     --border-color: #e5e7eb; /* gray-200 */
   }
 
-  /* ✅ 暗色模式 */
+  /* 暗色模式 */
   .dark {
     --bg-color: #0a0a0a;
     --text-color: #d1d5db; /* gray-300 */
@@ -30,7 +30,7 @@ body,
   }
 }
 
-/* ✅ 可选：统一滚动条 */
+/* 统一滚动条 */
 @layer utilities {
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;

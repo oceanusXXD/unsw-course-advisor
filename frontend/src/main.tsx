@@ -5,7 +5,6 @@ import App from "./App";
 
 const rootElement = document.getElementById("root") as HTMLElement;
 
-// ✅ Check system theme preference or local storage
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark" || (!savedTheme && prefersDark)) {

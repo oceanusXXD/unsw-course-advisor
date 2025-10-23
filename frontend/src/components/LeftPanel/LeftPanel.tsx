@@ -72,7 +72,6 @@ const LeftPanel: React.FC<Props> = ({ onWidthChange }) => {
     };
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
-  // 其他 Hooks (保持不变)
   useEffect(() => {
     const currentWidth = isOpen ? width : COLLAPSED_PANEL_WIDTH;
     onWidthChange(currentWidth);
@@ -123,12 +122,10 @@ const LeftPanel: React.FC<Props> = ({ onWidthChange }) => {
     setIsAuthModalOpen(true);
   }, []);
 
-  // --- 渲染 ---
   return (
     <>
       <div
         ref={panelRef}
-        // [!!] Updated dark mode background and border colors
         className={`fixed top-0 left-0 h-screen bg-white  border-gray-200 shadow-lg flex flex-col transition-width duration-300 ease-in-out z-40 dark:bg-neutral-900 dark:border-neutral-700`}
         style={{
           width: isOpen ? `${width}px` : `${COLLAPSED_PANEL_WIDTH}px`,
@@ -158,7 +155,7 @@ const LeftPanel: React.FC<Props> = ({ onWidthChange }) => {
             />
           </div>
 
-          {/* 拖拽条 (保持不变) */}
+          {/* 拖拽条*/}
           <div
             className="absolute top-0 right-0 h-full z-50"
             style={{
@@ -183,7 +180,7 @@ const LeftPanel: React.FC<Props> = ({ onWidthChange }) => {
         </div>
       </div>
 
-      {/* 认证模态 (保持不变) */}
+      {/* 认证模态*/}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </>
   );

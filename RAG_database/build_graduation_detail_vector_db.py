@@ -61,7 +61,7 @@ if USE_API_EMBEDDING:
     try:
         from openai import OpenAI  # 百炼兼容 client
     except Exception:
-        raise RuntimeError("请安装 openai: pip install openai （或使用你们提供的兼容库）")
+        raise RuntimeError("请安装 openai: pip install openai")
 else:
     try:
         from sentence_transformers import SentenceTransformer

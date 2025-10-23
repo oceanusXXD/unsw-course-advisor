@@ -32,19 +32,17 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(() => onRemove(toast.id), 300); // Wait for fade out
+      setTimeout(() => onRemove(toast.id), 300);
     }, toast.duration || 3000);
     return () => clearTimeout(timer);
   }, [toast, onRemove]);
 
-  // [!!] Updated color mapping with dark mode variants
+
   const colors = {
     success: "bg-green-500 dark:bg-green-600",
     error: "bg-red-500 dark:bg-red-600",
     warning: "bg-yellow-500 dark:bg-yellow-600",
-    info: "bg-blue-500 dark:bg-blue-600", // Using color hints for toasts is usually okay
-    // If you strictly want neutral:
-    // info: "bg-gray-500 dark:bg-neutral-600",
+    info: "bg-blue-500 dark:bg-blue-600",
   };
   const icons = { success: "✓", error: "✕", warning: "⚠", info: "ℹ" };
 
@@ -62,7 +60,6 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
           setIsVisible(false);
           setTimeout(() => onRemove(toast.id), 300);
         }}
-        // [!!] Updated dark hover color
         className="text-white opacity-70 hover:opacity-100 dark:hover:text-neutral-200 font-bold text-lg leading-none transition-opacity"
       >
         ×
@@ -71,7 +68,6 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   );
 };
 
-// [!!] Toaster container doesn't need specific dark styles, position fixed works fine.
 export const Toaster: React.FC<{ toasts: Toast[]; onRemove: (id: string) => void }> = ({ toasts, onRemove }) => (
   <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
     {toasts.map((toast) => (

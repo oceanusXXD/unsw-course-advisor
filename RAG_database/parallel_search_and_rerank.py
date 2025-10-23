@@ -35,8 +35,6 @@ API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 LOCAL_EMBED_MODEL = "sentence-transformers/all-mpnet-base-v2"
 # 分批大小：用于对 candidate_texts 做批量 API 调用
 EMBED_BATCH_SIZE = 64
-
-# 如果你有 cross-encoder 可开启以获得更好 rerank（需要 GPU/更高资源）
 USE_CROSS_ENCODER = False
 CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 # ----------------

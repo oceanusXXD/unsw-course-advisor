@@ -38,7 +38,7 @@ const BottomPanelUserMenu: React.FC<Props> = ({ user, logout, setActiveMenu }) =
 
     return (
         <div
-            // [!! 修正] 统一深色背景
+            // 统一深色背景
             className="absolute bottom-16 left-0 w-64 bg-white dark:bg-neutral-900 shadow-xl rounded-2xl border border-gray-100 dark:border-neutral-700 overflow-hidden animate-fadeIn z-50"
             role="menu"
         >
@@ -52,7 +52,7 @@ const BottomPanelUserMenu: React.FC<Props> = ({ user, logout, setActiveMenu }) =
                 {/* 1. 激活许可证 */}
                 <button
                     onClick={() => setActiveMenu("license")}
-                    // [!! 修正] 亮色悬停改为 yellow
+                    // 亮色悬停改为 yellow
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-yellow-100 dark:hover:bg-neutral-800 transition text-left"
                 >
                     <FiKey className="text-gray-500 dark:text-gray-400" />
@@ -62,7 +62,7 @@ const BottomPanelUserMenu: React.FC<Props> = ({ user, logout, setActiveMenu }) =
                 {/* 2. 设置按钮 */}
                 <button
                     onClick={handleSettingsClick}
-                    // [!! 修正] 亮色悬停改为 yellow
+                    // 亮色悬停改为 yellow
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-yellow-100 dark:hover:bg-neutral-800 transition text-left"
                 >
                     <FiSettings className="text-gray-500 dark:text-gray-400" />
@@ -74,14 +74,14 @@ const BottomPanelUserMenu: React.FC<Props> = ({ user, logout, setActiveMenu }) =
                 {/* 3. 帮助按钮 */}
                 <button
                     onClick={() => setActiveMenu("help")}
-                    // [!! 修正] 亮色悬停改为 yellow
+                    // 亮色悬停改为 yellow
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-yellow-100 dark:hover:bg-neutral-800 transition text-left"
                 >
                     <FiHelpCircle className="text-gray-500 dark:text-gray-400" />
                     帮助
                 </button>
 
-                {/* 4. 登出按钮 (保持红色 - UX 规范) */}
+                {/* 4. 登出按钮*/}
                 <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-left"

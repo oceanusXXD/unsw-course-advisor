@@ -28,24 +28,26 @@ const TopPanel: React.FC<Props> = ({
                     pointerEvents: isOpen ? "auto" : "none",
                 }}
             >
-                {/* [!! 修正] 颜色改为 yellow/black */}
                 <div
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-black font-bold text-lg flex-shrink-0"
+                    className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 
+                    flex items-center justify-center text-black font-bold text-lg flex-shrink-0"
                     aria-hidden
                 >
                     C
                 </div>
                 <div className="leading-tight overflow-hidden whitespace-nowrap">
-                    <div className="text-sm font-bold text-gray-800 dark:text-neutral-100">{title}</div>
-                    <div className="text-xs text-gray-500 dark:text-neutral-400">{subtitle}</div>
+                    <div className="text-sm font-bold text-gray-800 dark:text-neutral-100">
+                        {title}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-neutral-400">
+                        {subtitle}
+                    </div>
                 </div>
             </div>
 
             {/* 折叠/展开按钮 */}
             <div
-                className={`absolute top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${isOpen
-                    ? "right-4"
-                    : "left-1/2 -translate-x-1/2"
+                className={`absolute top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${isOpen ? "right-4" : "left-1/2 -translate-x-1/2"
                     }`}
             >
                 <button
@@ -53,12 +55,15 @@ const TopPanel: React.FC<Props> = ({
                         e.stopPropagation();
                         togglePanel();
                     }}
-                    // [!! 修正] 亮色悬停改为 yellow
                     className="p-2 rounded-full hover:bg-yellow-100 dark:hover:bg-neutral-800 transition text-gray-700 dark:text-neutral-300"
                     title={isOpen ? "Collapse" : "Expand"}
                     aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
                 >
-                    {isOpen ? <VscLayoutSidebarLeftOff size={20} /> : <VscLayoutSidebarLeft size={20} />}
+                    {isOpen ? (
+                        <VscLayoutSidebarLeftOff size={20} />
+                    ) : (
+                        <VscLayoutSidebarLeft size={20} />
+                    )}
                 </button>
             </div>
         </div>

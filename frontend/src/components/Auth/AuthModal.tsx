@@ -1,4 +1,4 @@
-// src/components/Auth/AuthModal.tsx (已修正)
+// src/components/Auth/AuthModal.tsx
 
 import React, { useState, useEffect } from "react";
 import { FiX, FiEye, FiEyeOff } from "react-icons/fi";
@@ -14,18 +14,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  // [!! 助手更改] 1. 为“确认密码”添加新状态
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const { login, signup, isLoading, error, authState } = useAuth();
 
-  // [修正 ✨] 将 resetForm 的定义移到最前面
   const resetForm = () => {
     setEmail("");
     setPassword("");
     setUsername("");
-    // [!! 助手更改] 2. 重置“确认密码”
+    // 2. 重置“确认密码”
     setConfirmPassword("");
     setLocalError(null);
   };
@@ -34,7 +32,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (authState.isLoggedIn) {
       onClose();
-      resetForm(); // 现在调用时，它已经被定义了
+      resetForm();
     }
   }, [authState.isLoggedIn, onClose]);
 
@@ -63,7 +61,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    // [!! 助手更改] 3. 添加密码匹配验证
+    // 3. 添加密码匹配验证
     if (!isLogin && !confirmPassword) {
       setLocalError("Please confirm your password");
       return;
@@ -72,7 +70,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setLocalError("Passwords do not match");
       return;
     }
-    // 密码长度验证（如果需要）
+    // 密码长度验证
     if (!isLogin && password.length < 6) {
       setLocalError("Password must be at least 6 characters");
       return;
@@ -82,7 +80,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (isLogin) {
         await login(email, password);
       } else {
-        // signup 函数通常只需要 email, password, username
+        // email, password, username
         await signup(email, password, username);
       }
     } catch (err) {
@@ -95,7 +93,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     resetForm();
   };
 
-  // ... 返回 JSX 的部分 ...
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8 relative">
@@ -123,7 +120,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         {/* 错误提示 */}
         {localError && (
-          // [!! 助手更改] 样式微调，使其不那么刺眼
+          // 样式微调，使其不那么刺眼
           <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm">
             {localError}
           </div>
@@ -142,7 +139,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="John Doe"
-                // [!! 助手更改] 4. 添加 text-gray-800
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
                 disabled={isLoading}
               />
@@ -159,7 +155,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              // [!! 助手更改] 4. 添加 text-gray-800
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
               disabled={isLoading}
             />
@@ -176,7 +171,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                // [!! 助手更改] 4. 添加 text-gray-800
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
                 disabled={isLoading}
               />
@@ -196,7 +190,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* [!! 助手更改] 5. 新增：确认密码字段 (仅注册) */}
+          {/* 5. 确认密码字段 (仅注册) */}
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -211,7 +205,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition disabled:bg-gray-100 text-gray-800"
                   disabled={isLoading}
                 />
-                {/* 这个按钮会同时控制两个密码框的可见性 */}
+                {/* 同时控制两个密码框的可见性 */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -228,7 +222,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <button
             type="submit"
             disabled={isLoading}
-            // [!! 助手更改] 调整了 mt-6，因为多了一个字段
             className={`w-full py-2 bg-cyan-400 text-white font-semibold rounded-lg hover:bg-cyan-500 transition disabled:bg-gray-400 disabled:cursor-not-allowed ${isLogin ? "mt-6" : "mt-4"}`}
           >
             {isLoading ? (
@@ -258,7 +251,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </p>
         </div>
 
-        {/* 开发者提示 */}
+        {/* 提示 */}
         <div className="mt-6 pt-6 border-t border-gray-200">
           <p className="text-xs text-gray-400 text-center">
             🔐 Secure authentication powered by Course advisor

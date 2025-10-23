@@ -19,7 +19,7 @@ const BottomPanelUserProfileMenu: React.FC<Props> = ({ user, logout }) => {
     const [activeMenu, setActiveMenu] = useState<ActiveMenu>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
 
-    // 点击外部关闭 (保持不变)
+    // 点击外部关闭
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {

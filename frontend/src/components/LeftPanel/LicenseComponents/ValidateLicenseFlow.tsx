@@ -8,11 +8,11 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../../../context/AuthContext";
 import { validateLicense } from "../../../services/api";
-import { Spinner, Alert } from '../../common/CommonUI'; // Import helpers
+import { Spinner, Alert } from '../../common/CommonUI';
 
 interface Props {
-    onBack: () => void; // Go back to the choice screen
-    onSuccess: () => void; // Signal successful validation
+    onBack: () => void;
+    onSuccess: () => void;
 }
 
 const ValidateLicenseFlow: React.FC<Props> = ({ onBack, onSuccess }) => {
@@ -38,7 +38,6 @@ const ValidateLicenseFlow: React.FC<Props> = ({ onBack, onSuccess }) => {
     };
 
     return (
-        // Added relative positioning for spinner overlay
         <form onSubmit={handleValidateLicense} className="p-4 space-y-4 relative">
             {isLoading && <div className="absolute inset-0 bg-white/50 dark:bg-neutral-800/50 flex items-center justify-center z-10"><Spinner /></div>}
             {error && <Alert message={error} onClose={() => setError(null)} />}
@@ -65,15 +64,15 @@ const ValidateLicenseFlow: React.FC<Props> = ({ onBack, onSuccess }) => {
                     id="license-key-validate" type="text" value={activationKey}
                     onChange={(e) => setActivationKey(e.target.value)}
                     placeholder="LIC-XXXX-XXXX-XXXX"
-                    // [!! 修正] 焦点颜色改为 yellow
-                    className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-neutral-900 dark:text-neutral-100"
+                    className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-lg 
+                    bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-neutral-900 dark:text-neutral-100"
                     disabled={isLoading}
                 />
             </div>
             <button
                 type="submit"
-                // [!! 修正] 颜色改为 yellow/black
-                className="w-full py-2.5 px-3 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-500 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 px-3 bg-yellow-400 text-black font-semibold rounded-lg 
+                hover:bg-yellow-500 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading || activationKey.length < 8}
             >
                 {isLoading ? "Validating..." : "Validate & Activate"}

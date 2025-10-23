@@ -1,16 +1,8 @@
-// AuthContext.tsx (已修正)
+// AuthContext.tsx
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { User, AuthState, LoginResponse } from "../types"; // [重要] 确保你的 AuthState 类型包含 accessToken 和 refreshToken
+import { User, AuthState, LoginResponse } from "../types";
 import { loginUser, registerUser, getCurrentUser, logoutUser } from "../services/api";
 
-// 确保你的 types.ts 中的 AuthState 接口看起来像这样：
-// export interface AuthState {
-//   isLoggedIn: boolean;
-//   user: User | null;
-//   accessToken: string | null;
-//   refreshToken: string | null;
-//   userInitial: string; // [!!] 确保 AuthState 接口包含此字段
-// }
 
 interface AuthContextType {
     authState: AuthState;
@@ -31,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user: null,
         accessToken: null,
         refreshToken: null,
-        // [!! 修正] 'username' 在此上下文中未定义。使用默认值 'U'。
+        // 'username' 在此上下文中未定义。使用默认值 'U'。
         userInitial: "U",
     });
     //初始加载状态应为 true，因为我们需要验证本地 token
@@ -51,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             user: null,
             accessToken: null,
             refreshToken: null,
-            // [!! 修正] 必须提供 userInitial 字段以匹配 AuthState
+            // 必须提供 userInitial 字段以匹配 AuthState
             userInitial: "U",
         });
     };
@@ -65,12 +57,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     const parsedAuth: AuthState = JSON.parse(savedAuth);
                     //检查 accessToken 是否存在
                     if (parsedAuth.accessToken) {
-                        // [!! 修正] 假设 getCurrentUser 返回 LoginResponse 结构
                         const userResponse = await getCurrentUser(parsedAuth.accessToken);
                         const { user } = userResponse;
                         if (!user) throw new Error("User not found during init.");
 
-                        // [!! 修正] 在恢复会话时也需要重建完整的状态
                         const userName = user.username || user.name;
                         const userInitial = userName ? userName[0].toUpperCase() : "U";
                         const finalUser: User = {
@@ -112,16 +102,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             // 2. 使用新获取的 accessToken 获取用户信息
-            // [!! 修正] 假设 getCurrentUser 返回 LoginResponse 结构
             const userResponse: LoginResponse = await getCurrentUser(tokenResult.access);
 
-            // [修正 ✨] 从响应中解构出 user 对象
+            // 从响应中解构出 user 对象
             const { user } = userResponse;
             if (!user) {
                 throw new Error("Failed to fetch user profile after login.");
             }
 
-            // [!! 修正] 提取 name 和 initial
+            // 提取 name 和 initial
             const userName = user.username || user.name;
             const userInitial = userName ? userName[0].toUpperCase() : "U";
 
@@ -133,12 +122,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     email: user.email,
                     name: userName || "user",
                     avatar: user.avatar,
-                    // [!! 修正] 修正逻辑以匹配 LoginResponse 类型 (license_active 在根部)
                     subscription: userResponse.license_active ? "plus" : "free",
                 },
                 accessToken: tokenResult.access,
                 refreshToken: tokenResult.refresh,
-                // [!! 修正] 增加 userInitial 字段
                 userInitial: userInitial,
             };
             saveAuthState(finalAuthState);
@@ -164,13 +151,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // 注册成功后也立即获取用户信息
             const userResponse = await getCurrentUser(result.access);
 
-            // [修正 ✨] 从响应中解构出 user 对象
+            // 解构出 user 对象
             const { user } = userResponse;
             if (!user) {
                 throw new Error("Failed to fetch user profile after signup.");
             }
 
-            // [!! 修正] 提取 name 和 initial
+            // 提取 name 和 initial
             const userName = user.username || name; // 'name' 是从 signup 传入的
             const userInitial = userName ? userName[0].toUpperCase() : "U";
 
@@ -185,7 +172,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 },
                 accessToken: result.access,
                 refreshToken: result.refresh,
-                // [!! 修正] 增加 userInitial 字段
                 userInitial: userInitial,
             };
             saveAuthState(finalAuthState);
@@ -198,7 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, []);
 
-    // 登出 (保持不变)
+    // 登出
     const logout = useCallback(async () => {
         setIsLoading(true);
         const tokenToInvalidate = authState.refreshToken;
@@ -219,7 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!authState.accessToken) return; //依赖 accessToken
 
         try {
-            // [!! 修正] 刷新逻辑需要像登录一样完整
+            // 刷新逻辑需要像登录一样完整
             const userResponse = await getCurrentUser(authState.accessToken);
             const { user } = userResponse;
             if (!user) {
@@ -246,7 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // 如果刷新失败（例如 token 过期），则登出用户
             logout();
         }
-    }, [authState.accessToken, logout]); // [!! 修正] 确保 logout 在依赖项中
+    }, [authState.accessToken, logout]);
 
     return (
         <AuthContext.Provider

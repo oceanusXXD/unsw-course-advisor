@@ -6,7 +6,7 @@ import { FiSun, FiMoon } from "react-icons/fi";
 const SettingsAppearanceSection: React.FC = () => {
     // --- Theme State ---
     const [isDark, setIsDark] = useState<boolean>(
-        document.documentElement.classList.contains("dark")
+        document.documentElement.classList.contains("dark"),
     );
 
     // --- Theme Handler ---
@@ -42,13 +42,14 @@ const SettingsAppearanceSection: React.FC = () => {
                     </span>
                     <div
                         aria-hidden="true"
-                        // [!! 修正] 切换开关颜色改为 yellow
-                        className={`relative inline-flex items-center h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out 
-        ${isDark ? 'bg-yellow-400' : 'bg-gray-200 dark:bg-neutral-600'}`}
+                        className={`relative inline-flex items-center h-6 w-11 flex-shrink-0 cursor-pointer 
+                            rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out 
+        ${isDark ? "bg-yellow-400" : "bg-gray-200 dark:bg-neutral-600"}`}
                     >
                         <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out 
-          ${isDark ? 'translate-x-5' : 'translate-x-0'}`}
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full 
+                                bg-white shadow ring-0 transition duration-200 ease-in-out 
+          ${isDark ? "translate-x-5" : "translate-x-0"}`}
                         />
                     </div>
                 </button>

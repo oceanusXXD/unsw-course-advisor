@@ -1,4 +1,3 @@
-// [!! 助手更改] 1. 导入 useRef (保持不变)
 import React, { useState, useEffect, useRef } from "react";
 
 interface InputPanelProps {
@@ -95,13 +94,12 @@ const InputPanel: React.FC<InputPanelProps> = ({
     }
   };
 
-  // [!! 助手更改] 2. 为“上传”按钮创建点击处理程序
+  // 2. 为“上传”按钮创建点击处理程序
   const handleUploadClick = () => {
     console.log("点击成功");
-    // 你可以在这里实现未来的文件上传逻辑
+    // TODO
   };
 
-  // === 样式逻辑 (保持不变) ===
   const containerBaseClass =
     "relative flex items-end self-stretch py-3 px-4 rounded-3xl transition-all duration-300";
 
@@ -163,25 +161,23 @@ const InputPanel: React.FC<InputPanelProps> = ({
         className={`${containerBaseClass} ${containerFocusClass}`}
         style={containerStyle}
       >
-        {/* [!! 助手更改] 3. 替换为 +号 上传按钮 */}
         <button
           type="button"
           onClick={handleUploadClick}
-          onMouseDown={(e) => e.preventDefault()} // 
+          onMouseDown={(e) => e.preventDefault()} //
           disabled={isLoading}
           className="mr-3 flex-shrink-0 mb-1.5 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors duration-150"
           aria-label="Upload file"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-          >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path
               d="M9 3.75V14.25"
               stroke={
-                effectiveError ? "#EF4444" : isFocused ? "#F59E0B" : defaultStroke
+                effectiveError
+                  ? "#EF4444"
+                  : isFocused
+                    ? "#F59E0B"
+                    : defaultStroke
               }
               strokeWidth="2"
               strokeLinecap="round"
@@ -190,7 +186,11 @@ const InputPanel: React.FC<InputPanelProps> = ({
             <path
               d="M3.75 9H14.25"
               stroke={
-                effectiveError ? "#EF4444" : isFocused ? "#F59E0B" : defaultStroke
+                effectiveError
+                  ? "#EF4444"
+                  : isFocused
+                    ? "#F59E0B"
+                    : defaultStroke
               }
               strokeWidth="2"
               strokeLinecap="round"
@@ -199,7 +199,7 @@ const InputPanel: React.FC<InputPanelProps> = ({
           </svg>
         </button>
 
-        {/* ✏️ 多行输入框 (保持不变) */}
+        {/*多行输入框*/}
         <textarea
           ref={textareaRef}
           placeholder="Ask about courses (Shift + Enter for new line)"
@@ -233,7 +233,7 @@ const InputPanel: React.FC<InputPanelProps> = ({
           }}
         />
 
-        {/* 🚀 提交/停止按钮 (保持不变) */}
+        {/* 提交/停止按钮*/}
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSubmit}
@@ -258,7 +258,7 @@ const InputPanel: React.FC<InputPanelProps> = ({
             </svg>
           )}
         </button>
-      </div >
+      </div>
     </>
   );
 };

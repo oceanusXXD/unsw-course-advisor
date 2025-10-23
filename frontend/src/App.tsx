@@ -8,12 +8,11 @@ import ResizeHandle from "./components/ResizeHandle/ResizeHandle";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import { imageUrls } from "./assets/assets";
-// [!! 助手更改] 删除了 ResultsCourseIcon 和 ResultsCourseIconSolid 导入
 import "./index.css";
 
-// [!!] Import AppProvider and AppContext
+// Import AppProvider and AppContext
 import { AppProvider, useAppContext } from "./context/AppContext";
-// [!!] Import the new settings page
+// Import the new settings page
 import SettingsPage from "./components/SettingsPage/SettingsPage";
 
 // --- Constants (unchanged) ---
@@ -24,7 +23,7 @@ const RESIZE_HANDLE_WIDTH = 12;
 const COLLAPSED_PANEL_WIDTH_PX = 56;
 
 const AppContent: React.FC = () => {
-  // [!!] Get current view from Context
+  // Get current view from Context
   const { activeView } = useAppContext();
 
   // --- State management (unchanged) ---
@@ -38,7 +37,6 @@ const AppContent: React.FC = () => {
 
   const chatRef = useRef<HTMLDivElement | null>(null);
 
-  // ... (mockCourses and all handle functions remain unchanged) ...
   const mockCourses = [
     {
       id: "1",
@@ -61,9 +59,8 @@ const AppContent: React.FC = () => {
   }, []);
 
   const toggleRightPanel = () => setIsRightPanelOpen((prev) => !prev);
-
+  //TODO
   const handleSources = (sourcesData: any[]) => {
-    // Process data sources
   };
 
   const handleResizeMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -106,7 +103,6 @@ const AppContent: React.FC = () => {
   }, [isResizing, handleResizeMouseMove, handleResizeMouseUp]);
 
   return (
-    // [!!] Updated dark mode background for the main app container
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-800 w-full">
       <LeftPanel onWidthChange={handleLeftPanelWidthChange} />
 
@@ -121,19 +117,14 @@ const AppContent: React.FC = () => {
       >
         <div
           ref={chatRef}
-          // Height is now h-screen and overflow-y-auto
           className="w-full h-screen overflow-y-auto py-4 px-2"
         >
-          {/* [!!] Core change: Render based on activeView */}
           {activeView === "chat" && <Chat onSources={handleSources} />}
           {activeView === "settings" && <SettingsPage />}
         </div>
       </div>
 
-      {/* Right Panel */}
       <div
-        // [!! 修正] 
-        // 移除了 'border-l' 和 'dark:border-neutral-700'
         className="fixed top-0 right-0 h-screen bg-white dark:bg-neutral-900 shadow-lg flex flex-col transition-[width] duration-300 ease-in-out z-40"
         style={{
           width: isRightPanelOpen
@@ -152,13 +143,10 @@ const AppContent: React.FC = () => {
           >
             <button
               onClick={toggleRightPanel}
-              // [!!] Updated dark mode hover background
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700"
               title={isRightPanelOpen ? "Collapse" : "Expand"}
             >
-              {/* [!! 助手更改] 替换为箭头 SVG */}
               {isRightPanelOpen ? (
-                // 向右箭头 (折叠)
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -174,7 +162,6 @@ const AppContent: React.FC = () => {
                   />
                 </svg>
               ) : (
-                // 向左箭头 (展开)
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -219,7 +206,6 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <ChatProvider>
-        {/* [!!] Wrap AppContent with AppProvider */}
         <AppProvider>
           <AppContent />
         </AppProvider>

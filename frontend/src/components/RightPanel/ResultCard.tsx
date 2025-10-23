@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // [!!] Added useEffect
+import React, { useState, useEffect } from "react";
 
 export interface CourseData {
   id: string;
@@ -19,7 +19,6 @@ const ResultCard: React.FC<ResultCardProps> = ({
   expanded = false,
   onClick,
 }) => {
-  // [!!] Added dark mode state listener
   const [isDark, setIsDark] = useState<boolean>(
     document.documentElement.classList.contains("dark"),
   );
@@ -35,21 +34,19 @@ const ResultCard: React.FC<ResultCardProps> = ({
     return () => observer.disconnect();
   }, []);
 
-  // [!!] Use isDark state for colors
   const pillBg = isDark ? "dark:bg-neutral-800" : "bg-[#F5F6F8]";
   const pillHover = isDark ? "dark:hover:bg-neutral-700" : "hover:bg-[#ECEDEF]";
   const textMuted = isDark ? "dark:text-neutral-400" : "text-[#6B6C6E]";
   const titleColor = isDark ? "dark:text-neutral-100" : "text-[#111827]";
-  const arrowColor = isDark ? textMuted : titleColor; // Arrow is muted in dark, dark in light
+  const arrowColor = isDark ? textMuted : titleColor;
 
-  // [!!] Use isDark state for background gradient/color
   const getBackgroundStyle = () => {
     if (expanded) {
       return isDark
-        ? "linear-gradient(180deg, #262626 0%, #171717 100%)" // neutral-800 to neutral-900
-        : "linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%)"; // white to gray-50
+        ? "linear-gradient(180deg, #262626 0%, #171717 100%)"
+        : "linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%)";
     } else {
-      return isDark ? "#262626" : "#F5F6F8"; // neutral-800 vs specific light gray
+      return isDark ? "#262626" : "#F5F6F8";
     }
   };
 
@@ -67,7 +64,7 @@ const ResultCard: React.FC<ResultCardProps> = ({
         style={{
           borderRadius: expanded ? "20px" : "9999px",
           padding: expanded ? "16px" : "12px 16px",
-          background: getBackgroundStyle(), // Use dynamic background
+          background: getBackgroundStyle(),
           transform: expanded ? "scale(1.02)" : "scale(1)",
           transitionProperty:
             "border-radius, padding, background, transform, box-shadow",
@@ -107,7 +104,6 @@ const ResultCard: React.FC<ResultCardProps> = ({
           {/* Arrow Icon */}
           <div className={`flex-shrink-0 ml-2 ${arrowColor}`}>
             {" "}
-            {/* [!!] Use arrowColor variable */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className={`h-5 w-5 transition-transform duration-500 ease-in-out ${expanded ? "rotate-180" : "rotate-0"

@@ -7,7 +7,7 @@ import { streamChat } from "../../services/api";
 import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { Message } from "../../types";
-import { FiArrowRight } from "react-icons/fi"; // 保留
+import { FiArrowRight } from "react-icons/fi";
 
 interface ChatProps {
   onSources?: (sources: any[]) => void;
@@ -133,7 +133,7 @@ const Chat: React.FC<ChatProps> = ({ onSources }) => {
                   disabled={streamingLoading}
                   aria-disabled={streamingLoading}
                   aria-label={`发送预设: ${preset}`}
-                  // 动画延迟让多个按钮有瀑布出现效果（用户可通过 prefers-reduced-motion 关闭）
+                  // 动画延迟让多个按钮有瀑布出现效果
                   style={{ animationDelay: `${index * 0.12}s` }}
                   className={`
             relative w-full flex items-center justify-between gap-4 px-6 py-4 rounded-2xl
@@ -163,7 +163,6 @@ const Chat: React.FC<ChatProps> = ({ onSources }) => {
             `}
                   />
 
-                  {/* 内容容器（置于最上层） */}
                   <span className="relative z-10 flex-1 text-left">
                     <span
                       className={`
@@ -175,11 +174,8 @@ const Chat: React.FC<ChatProps> = ({ onSources }) => {
                     >
                       {preset}
                     </span>
-                    {/* 可选：辅助说明或标签（如果需要） */}
-                    {/* <small className="text-sm text-gray-500 dark:text-neutral-400">示例提示</small> */}
                   </span>
 
-                  {/* 箭头图标：平滑的位移动画 + 透明度过渡，支持 reduced-motion */}
                   <FiArrowRight
                     className={`
               relative z-10 w-5 h-5

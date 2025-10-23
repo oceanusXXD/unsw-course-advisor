@@ -31,14 +31,14 @@ export async function _makeRequest(
     onSources,
     onError,
     headers: customHeaders,
-    token: directToken, // [修正 ✨] 将传入的 token 解构出来
+    token: directToken, // 将传入的 token 解构出来
   } = options;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(customHeaders ?? {}),
   };
-  // [修正 ✨] 认证逻辑重构
+  //认证逻辑重构
   let authToken = directToken; // 1. 优先使用直接传入的 token
 
   // 2. 如果没有直接传入的 token，并且需要认证，才从 localStorage 查找

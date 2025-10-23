@@ -1,9 +1,7 @@
 // tailwind.config.ts
 
-// 导入 'Config' 类型，以获得更好的类型提示
 import type { Config } from "tailwindcss";
 
-// 导入 @tailwindcss/typography 插件
 import typography from "@tailwindcss/typography";
 
 const config: Config = {
@@ -46,9 +44,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    typography, // [!!] 插件也用 import 导入
-  ],
+  plugins: [typography],
 };
 
 export default config;

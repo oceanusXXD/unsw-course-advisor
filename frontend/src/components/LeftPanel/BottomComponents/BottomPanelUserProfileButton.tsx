@@ -1,7 +1,6 @@
 // src/components/LeftPanel/BottomPanelUserProfileButton.tsx
 
 import React from "react";
-// [!! 修正] 导入路径 (删除 'BottomComponents/')
 import { AuthUser } from "./BottomPanelTypes";
 
 interface Props {
@@ -9,7 +8,7 @@ interface Props {
     onClick: () => void;
 }
 
-// 帮助函数：获取用户姓名首字母 (保持不变)
+// 获取用户姓名首字母
 const getInitials = (name?: string | null, email?: string) => {
     if (name) {
         const parts = name.trim().split(" ");
@@ -24,7 +23,7 @@ const BottomPanelUserProfileButton: React.FC<Props> = ({ user, onClick }) => {
     return (
         <button
             onClick={onClick}
-            // [!! 修正] 亮色悬停改为 yellow
+            // 亮色悬停改为 yellow
             className="flex items-center gap-3 w-full hover:bg-yellow-100 dark:hover:bg-neutral-800 p-2 rounded-xl transition"
             aria-label="打开用户菜单"
         >
@@ -35,7 +34,6 @@ const BottomPanelUserProfileButton: React.FC<Props> = ({ user, onClick }) => {
                     className="w-11 h-11 rounded-full object-cover"
                 />
             ) : (
-                // [!! 修正] 渐变色改为 yellow, 文字改为 black
                 <div className="w-11 h-11 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-black font-bold text-base">
                     {getInitials(user.name, user.email)}
                 </div>

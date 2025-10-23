@@ -12,7 +12,6 @@ const BottomPanelLoggedOut: React.FC<Props> = ({ onOpenAuth }) => {
         <div className="flex flex-col gap-2">
             <button
                 onClick={onOpenAuth}
-                // [!! 修正] 颜色从 cyan -> yellow, 文字 text-white -> text-black
                 className="w-full py-2.5 px-3 bg-yellow-400 text-black font-semibold rounded-xl hover:bg-yellow-500 transition text-sm"
                 aria-label="登录或注册"
             >

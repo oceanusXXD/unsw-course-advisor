@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "课程助手插件",
+  "version": "0.1.0",
+  "description": "上传文件并使用 License Key 自动选课 (包含 UNSW 助手)。",
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "48": "icons/icon.svg"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "128": "icons/icon.svg"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["tabs", "scripting", "storage", "activeTab"],
+  "host_permissions": [
+    "http://localhost/*",
+    "https://localhost/*",
+    "https://my.unsw.edu.au/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://my.unsw.edu.au/active/studentClassEnrol/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injector.js", "content_script.js"],
+      "matches": ["https://my.unsw.edu.au/*"]
+    }
+  ]
+}
