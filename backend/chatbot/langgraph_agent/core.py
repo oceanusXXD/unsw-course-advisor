@@ -191,6 +191,8 @@ def _messages_to_dicts(messages):
                 dict_messages.append({"role": "user", "content": msg.content})
             elif msg.type == "ai":
                 dict_messages.append({"role": "assistant", "content": msg.content})
+            elif msg.type == "tool":
+                dict_messages.append({"role": "tool", "content": msg.content})
     return dict_messages
 
 

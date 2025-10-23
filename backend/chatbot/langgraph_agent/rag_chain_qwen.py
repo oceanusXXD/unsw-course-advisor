@@ -180,48 +180,40 @@ def load_faiss_and_metadata(index_path: str = FAISS_INDEX_PATH, meta_path: str =
 # ---------------- Query embedding 生成 ----------------
 def embed_query(query: str) -> np.ndarray:
     """
-    生成并归一化 embedding （返回 numpy array shape (1, dim) dtype float32）
-    - 在 API 模式下使用 APIEmbeddingModel.encode
-    - 在本地模式下使用 SentenceTransformer.encode
+    Generate and normalize embedding (returns numpy array shape (1, dim) dtype float32)
     """
+    index, _ = load_faiss_and_metadata()
+    target_dim = index.d
+    
     if not query:
-        # 返回合适形状的零向量（尽量与索引维度匹配）
-        index, _ = load_faiss_and_metadata()
-        dim = index.d if index is not None else API_DIMENSIONS
-        return np.zeros((1, dim), dtype=np.float32)
+        return np.zeros((1, target_dim), dtype=np.float32)
 
     model = _load_embedding_model()
-    # 调用 encode（统一以列表输入）
     emb = model.encode([query], convert_to_numpy=True, batch_size=1)
+    
     if not isinstance(emb, np.ndarray):
         emb = np.array(emb, dtype=np.float32)
     if emb.dtype != np.float32:
         emb = emb.astype(np.float32)
 
-    # 如果返回 shape 为 (dim,) -> reshape
     if emb.ndim == 1:
         emb = emb.reshape(1, -1)
-    # 如果返回多行，取第一行
+    
     if emb.shape[0] >= 1:
         q_emb = emb[0:1]
     else:
-        # 兜底
-        index, _ = load_faiss_and_metadata()
-        dim = index.d if index is not None else API_DIMENSIONS
-        q_emb = np.zeros((1, dim), dtype=np.float32)
+        q_emb = np.zeros((1, target_dim), dtype=np.float32)
 
-    # 归一化
-    # 若索引维度与 q_emb 不匹配，尝试截断或填充零（防止 crash）
-    index, _ = load_faiss_and_metadata()
-    target_dim = index.d if index is not None else q_emb.shape[1]
     if q_emb.shape[1] != target_dim:
-        if q_emb.shape[1] > target_dim:
-            # 截断
-            q_emb = q_emb[:, :target_dim]
-        else:
-            # 填充
-            pad = np.zeros((q_emb.shape[0], target_dim - q_emb.shape[1]), dtype=np.float32)
-            q_emb = np.hstack([q_emb, pad])
+        raise ValueError(
+            f"Embedding dimension mismatch! "
+            f"Query vector dimension (q_emb.shape[1]) is {q_emb.shape[1]}, "
+            f"but FAISS index dimension (index.d) is {target_dim}.\n"
+            f"Please check:\n"
+            f"1. If USE_API_EMBEDDING=True, is your API_DIMENSIONS ({API_DIMENSIONS}) correct?\n"
+            f"2. If USE_API_EMBEDDING=False, does your model ({EMBEDDING_MODEL_NAME_LOCAL}) match the index?\n"
+            f"3. Did you forget to regenerate faiss_index.bin after switching models?"
+        )
 
     faiss.normalize_L2(q_emb)
     return q_emb
