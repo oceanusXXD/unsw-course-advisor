@@ -6,7 +6,7 @@ import json
 import threading
 import traceback
 from pathlib import Path
-
+import collections.abc
 # ==== 路径配置 ====
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
@@ -124,18 +124,27 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
         }
 
         if ENABLE_VERBOSE_LOGGING:
+            # (这是你原来的调试打印)
             print("!!!!!!!!!!!!!!inputs:")
 
         # ==== 调用编译后的图 ====
         result = compiled.invoke(inputs)
         if ENABLE_VERBOSE_LOGGING:
+            # (这是你原来的调试打印)
             print("!!!!!!!!!!!!!!result:")
 
         output_stream = result.get("answer")
         final_answer = ""
 
-        # ==== 流式输出 ====
+        # ==========================================================
+        # ==== 流式输出 (这是已修复的核心逻辑) ====
+        # ==========================================================
+        
         if output_stream is None:
+            # --- 兜底逻辑：如果 "answer" 为空，尝试从其他字段获取非流式答案 ---
+            if ENABLE_VERBOSE_LOGGING:
+                print("⚠️ 'answer' field is None, checking sync fallbacks...")
+            
             maybe_sync = (
                 result.get("answer_sync")
                 or result.get("final_answer")
@@ -145,9 +154,25 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
             if isinstance(maybe_sync, str):
                 final_answer = maybe_sync
                 yield {"type": "token", "data": final_answer}
+            elif ENABLE_VERBOSE_LOGGING:
+                 print("⚠️ No valid answer or fallback answer found.")
 
-        else:
+        elif isinstance(output_stream, str):
+            # --- 修复点 1: answer 是一个完整的字符串 (来自插件或选课) ---
+            # 我们直接把它作为单个 token 发送出去，而不是逐字迭代
+            if ENABLE_VERBOSE_LOGGING:
+                print(f"[RunChat] Received a single string answer: {output_stream[:50]}...")
+                
+            final_answer = output_stream
+            yield {"type": "token", "data": final_answer}
+
+        elif isinstance(output_stream, collections.abc.Iterator):
+            # --- 修复点 2: answer 是一个流 (来自 LLM) ---
+            # 我们迭代它，并逐个解析和转发 token
+            if ENABLE_VERBOSE_LOGGING:
+                print("[RunChat] Received an iterator stream, starting iteration...")
             try:
+                # (这是你原来的 Qwen 解析逻辑，保持不变)
                 for chunk in output_stream:
                     if isinstance(chunk, bytes):
                         chunk = chunk.decode("utf-8", errors="ignore")
@@ -180,24 +205,32 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
                         if text_piece:
                             final_answer += text_piece
                             yield {"type": "token", "data": text_piece}
-
-            except TypeError:
-                if isinstance(output_stream, str):
-                    final_answer = output_stream
-                    yield {"type": "token", "data": final_answer}
-                elif ENABLE_VERBOSE_LOGGING:
-                    print("⚠️ output_stream is not iterable or str.")
+                            
             except Exception as e:
                 tb = traceback.format_exc()
                 if ENABLE_VERBOSE_LOGGING:
                     print(f"Error while iterating output_stream: {e}\n{tb}")
                 yield {"type": "error", "data": {"message": str(e), "trace": tb}}
+                
+        else:
+            # --- 兜底：如果类型未知，转为字符串并发送 ---
+            if ENABLE_VERBOSE_LOGGING:
+                print(f"⚠️ Unknown answer type: {type(output_stream)}, converting to str.")
+            final_answer = str(output_stream)
+            yield {"type": "token", "data": final_answer}
+            
+        # ==========================================================
+        # ==== 修复结束 ====
+        # ==========================================================
+
 
         # ==== 输出完整历史 ====
+        # (这部分逻辑保持不变)
         final_history = messages + [{"role": "assistant", "content": final_answer}]
         yield {"type": "history", "data": final_history}
 
         # ==== 保存最终结果 ====
+        # (这部分逻辑保持不变)
         if node_save_memory:
             try:
                 state_for_save = {
@@ -234,4 +267,6 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
             perf_monitor.end_session()
         except Exception:
             pass
+        # 你的前端 _makeRequest 解析器目前没有处理 [DONE] 或 "end" 类型
+        # 但发送这个事件是一个好习惯，以防未来需要
         yield {"type": "end", "data": "Stream finished."}

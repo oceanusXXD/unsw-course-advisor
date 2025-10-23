@@ -1,6 +1,7 @@
 import json
-from typing import Dict, Any, Optional
-
+from typing import Dict, Any, Optional, Iterator
+import random
+import time
 from core import TOOL_REGISTRY, USE_FAST_ROUTER, ROUTING_MODEL_URL, ROUTING_MODEL_NAME, ROUTING_MODEL_KEY, QWEN_MODEL, ENABLE_VERBOSE_LOGGING, call_qwen_sync
 
 model = QWEN_MODEL
@@ -65,6 +66,37 @@ def contains_successful_plugin_installation(messages: list) -> bool:
 
     return False
 
+def _string_to_llm_stream(text: str) -> Iterator[str]:
+    """
+    模拟打字机风格 LLM 流输出：
+    - 每次输出随机长度的字符块
+    - 每次输出之间间隔随机时间
+    """
+    if not text:
+        return
+
+    idx = 0
+    while idx < len(text):
+        # 随机决定本次输出长度，最少1，最多10个字符，可根据需求调整
+        chunk_size = random.randint(1, 10)
+        piece = text[idx: idx + chunk_size]
+        idx += chunk_size
+
+        simulated_chunk = {
+            "choices": [
+                {
+                    "delta": {"content": piece},
+                    "finish_reason": None,
+                    "index": 0
+                }
+            ]
+        }
+        yield json.dumps(simulated_chunk, ensure_ascii=False)
+
+        # 随机暂停时间，0.02~0.2秒之间，可调节
+        time.sleep(random.uniform(0.02, 0.2))
+
+
 def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     生成答案。
@@ -75,28 +107,30 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
     retrieved = state.get("retrieved") or []
     route = state.get("route")
 
-    # --- 情况 1: 最新 ToolMessage 来自 generate_selection，返回 encrypted.url ---
+# --- 情况 1: generate_selection ---
     if route == "call_tool":
         parsed = _parse_last_tool_message(messages)
         if parsed and isinstance(parsed, dict):
-            # 检查是否是 generate_selection 生成的数据（位于 parsed["data"]["meta"]["generated_by"]）
             generated_by = parsed.get("data", {}).get("meta", {}).get("generated_by")
             if generated_by == "generate_selection":
-                # 读取 encrypted.url
                 encrypted = parsed.get("encrypted") or {}
                 url = encrypted.get("url")
                 if url:
                     answer_text = f"好的，我已经帮你选好课了：{url}，你只需要下载后复制到插件中即可选课成功"
-                    return {"answer": answer_text}
+                    # 【修改】将 str 适配成流
+                    return {"answer": _string_to_llm_stream(answer_text)}
                 else:
-                    # 没有加密 URL 的兜底提示
-                    return {"answer": "好的，已生成选课结果，但尚未生成加密文件（encrypted.url 未返回）。请稍后重试或联系管理员。"}
+                    answer_text = "好的，已生成选课结果，但尚未生成加密文件（encrypted.url 未返回）。请稍后重试或联系管理员。"
+                    # 【修改】将 str 适配成流
+                    return {"answer": _string_to_llm_stream(answer_text)}
 
     # --- 情况 2: 插件安装成功 ---
     if route == "call_tool" and contains_successful_plugin_installation(messages):
         if ENABLE_VERBOSE_LOGGING:
             print("[Plugin Install Detector] 插件安装成功，返回固定提示。")
-        return {"answer": "插件安装成功！您现在可以使用这个插件了。"}
+        answer_text = "插件安装成功！您现在可以使用这个插件了。"
+        # 【修改】将 str 适配成流
+        return {"answer": _string_to_llm_stream(answer_text)}
 
     # --- 其余：构建 system_prompt 并调用 LLM ---
     system_prompt = ""
