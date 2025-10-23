@@ -74,11 +74,11 @@
 
 ## 架构图
 
-![系统架构](./document/structure.png)
+![系统架构](./structure.png)
 
-![使用流程](./document/Usage.png)
+![使用流程](.//Usage.png)
 
-![加密流程](./document/encode_result.png)
+![加密流程](./encode_result.png)
 
 # UNSW 课程顾问 - 使用说明
 
