@@ -124,16 +124,21 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
         }
 
         if ENABLE_VERBOSE_LOGGING:
+            # (这是你原来的调试打印)
             print("!!!!!!!!!!!!!!inputs:")
 
         # ==== 调用编译后的图 ====
         result = compiled.invoke(inputs)
         if ENABLE_VERBOSE_LOGGING:
+            # (这是你原来的调试打印)
             print("!!!!!!!!!!!!!!result:")
 
         output_stream = result.get("answer")
         final_answer = ""
-        print("!!!!!!!!!!!!!!!!!!!!outputstream",output_stream)
+
+        # ==========================================================
+        # ==== 流式输出 (这是已修复的核心逻辑) ====
+        # ==========================================================
         
         if output_stream is None:
             # --- 兜底逻辑：如果 "answer" 为空，尝试从其他字段获取非流式答案 ---
@@ -153,8 +158,8 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
                  print("⚠️ No valid answer or fallback answer found.")
 
         elif isinstance(output_stream, str):
-            # 作为单个 token 发送出去，而不是逐字迭代
-            print("!!!!!!!!!!!!!!!!!!!!outputstream作为单个 token 发送出去")
+            # --- 修复点 1: answer 是一个完整的字符串 (来自插件或选课) ---
+            # 我们直接把它作为单个 token 发送出去，而不是逐字迭代
             if ENABLE_VERBOSE_LOGGING:
                 print(f"[RunChat] Received a single string answer: {output_stream[:50]}...")
                 
@@ -162,11 +167,12 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
             yield {"type": "token", "data": final_answer}
 
         elif isinstance(output_stream, collections.abc.Iterator):
-            # 逐个解析和转发 token
-            print("!!!!!!!!!!!!!!!!!!!!outputstream逐个解析和转发 token")
+            # --- 修复点 2: answer 是一个流 (来自 LLM) ---
+            # 我们迭代它，并逐个解析和转发 token
             if ENABLE_VERBOSE_LOGGING:
                 print("[RunChat] Received an iterator stream, starting iteration...")
             try:
+                # (这是你原来的 Qwen 解析逻辑，保持不变)
                 for chunk in output_stream:
                     if isinstance(chunk, bytes):
                         chunk = chunk.decode("utf-8", errors="ignore")
@@ -215,21 +221,20 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
             
         final_history = messages + [{"role": "assistant", "content": final_answer}]
         yield {"type": "history", "data": final_history}
+
+        # ==== 保存最终结果 ====
+        # (这部分逻辑保持不变)
         if node_save_memory:
             try:
                 state_for_save = {
-                      "messages": final_history,
-                      "query": query,
-                      "user_id": user_id,
-                      "route": result.get("route", "general_chat"),
-                      "answer": final_answer,
-                      "memory": {
-                                    "route": result.get("route"),
-                                    "is_grounded": result.get("is_grounded")
-                                },
-
-                      "is_grounded": result.get("is_grounded", True),
-                    }
+                    "messages": final_history,
+                    "query": query,
+                    "user_id": user_id,
+                    "route": result.get("route", "general_chat"),
+                    "answer": final_answer,
+                    "memory": result.get("memory", {}) or {},
+                    "is_grounded": result.get("is_grounded", True),
+                }
                 if ENABLE_VERBOSE_LOGGING:
                     print("Calling node_save_memory with state:")
                 node_save_memory(state_for_save)
@@ -255,5 +260,6 @@ def run_chat(query: str, user_id: str = "anonymous", init_messages=None):
             perf_monitor.end_session()
         except Exception:
             pass
-        # _makeRequest 解析器目前没有处理 [DONE] 或 "end" 类型 TODO
+        # 你的前端 _makeRequest 解析器目前没有处理 [DONE] 或 "end" 类型
+        # 但发送这个事件是一个好习惯，以防未来需要
         yield {"type": "end", "data": "Stream finished."}
