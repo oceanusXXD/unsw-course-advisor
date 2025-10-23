@@ -132,22 +132,38 @@ def contains_successful_plugin_installation(messages: list) -> bool:
     return False
 
 def _string_to_llm_stream(text: str) -> Iterator[str]:
+    import random
+    import time
     """
-    将完整文本转换为类似 LLM 的流式输出格式
-    🔧 修复：一次性返回完整文本，而不是逐字符
+    【适配器】将普通字符串包装成模拟的 LLM 流。
+    
+    改进点：
+    1. 每次 yield 随机长度的“token”块（1~5 个字符）。
+    2. 每次 yield 之间随机 sleep（1~50ms）。
     """
     if not text:
         return
-    
-    # 方式1：一次性返回完整内容（最简单）
-    simulated_chunk = {
-        "choices": [{
-            "delta": {"content": text},
-            "finish_reason": None,
-            "index": 0
-        }],
-    }
-    yield json.dumps(simulated_chunk, ensure_ascii=False)
+
+    i = 0
+    while i < len(text):
+        # 随机 token 长度
+        token_len = random.randint(1, 5)
+        token = text[i:i+token_len]
+        i += token_len
+
+        simulated_chunk = {
+            "choices": [
+                {
+                    "delta": {"content": token},
+                    "finish_reason": None,
+                    "index": 0
+                }
+            ]
+        }
+        yield json.dumps(simulated_chunk, ensure_ascii=False)
+
+        # 随机 sleep，模拟网络延迟或生成速度
+        time.sleep(random.uniform(0.001, 0.05))
         
 
 

@@ -105,22 +105,44 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateLastMessageContent = useCallback((chatId: string, chunk: string) => {
         setChats(prevChats => {
             const updatedChats = prevChats.map(chat => {
+                // 1. 找到需要更新的 chat
                 if (chat.id === chatId) {
-                    const newMessages = [...chat.messages];
-                    const lastMessage = newMessages[newMessages.length - 1];
-                    if (lastMessage && lastMessage.role === 'assistant') {
-                        lastMessage.content += chunk;
-                        lastMessage.timestamp = new Date();
+                    // 2. 确保至少有一条消息
+                    if (chat.messages.length === 0) {
+                        return chat;
                     }
-                    return { ...chat, messages: newMessages, updatedAt: new Date() };
+
+                    const lastMessage = chat.messages[chat.messages.length - 1];
+
+                    // 3. 检查最后一条消息是否是 assistant 发的
+                    if (lastMessage && lastMessage.role === 'assistant') {
+                        // 4. ✅ 正确：创建一个 *新的* 消息对象
+                        const updatedLastMessage = {
+                            ...lastMessage,
+                            content: lastMessage.content + chunk, // 附加新的内容
+                            timestamp: new Date(),
+                        };
+
+                        // 5. ✅ 正确：创建一个 *新的* 消息数组
+                        const newMessages = [
+                            ...chat.messages.slice(0, -1), // 包含除了最后一条之外的所有旧消息
+                            updatedLastMessage       // 替换上更新后的最后一条消息
+                        ];
+
+                        // 6. 返回一个 *新的* chat 对象
+                        return { ...chat, messages: newMessages, updatedAt: new Date() };
+                    }
                 }
+                // 7. 对于其他 chat，返回原样
                 return chat;
             });
 
+            // 更新 currentChat state
             const updatedCurrentChat = updatedChats.find(c => c.id === chatId);
             if (updatedCurrentChat) {
                 setCurrentChat(updatedCurrentChat);
             }
+
             saveChatsToStorage(updatedChats);
             return updatedChats;
         });

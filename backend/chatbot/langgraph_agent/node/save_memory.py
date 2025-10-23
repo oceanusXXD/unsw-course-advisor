@@ -129,7 +129,7 @@ def node_save_memory(state: Dict[str, Any]) -> Dict[str, Any]:
             preview = str(serializable_memory)
             if len(preview) > 1000:
                 preview = preview[:1000] + " ...(truncated)"
-            print(f"!!!!!!!!!!!!!!serializable_memory preview: {preview}")
+            print(f"!!!!!!!!!!!!!!serializable_memory preview:")
 
         with tempfile.NamedTemporaryFile("w", delete=False, dir=MEMORY_DIR, encoding="utf-8") as tf:
             json.dump(serializable_memory, tf, ensure_ascii=False, indent=2)

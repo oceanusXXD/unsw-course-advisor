@@ -4,7 +4,7 @@ import json
 import time
 
 # UPDATE THE URL TO THE NEW STREAMING ENDPOINT
-URL = "http://127.0.0.1:8000/api/chat_multiround/" 
+URL = "http://127.0.0.1:8000/api/chatbot/chat_multiround/" 
 history = []  # [{"user":"...","bot":"..."}, ...]
 
 print("多轮交互测试 (Streaming CLI)。输入 'exit' 或 'quit' 结束。")
