@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAdminUser
 
 from .models import User
 from .serializers import (
@@ -217,6 +218,22 @@ class ChangePasswordView(APIView):
             logger.error(f"Change password failed for user {user.email}: {str(e)}", exc_info=True)
             return Response({"error": "修改密码失败", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class DeleteUserView(generics.DestroyAPIView):
+    """删除当前登录用户"""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            user = request.user
+            logger.info(f"User delete request: {user.email}")
+            user.delete()
+            logger.info(f"User {user.email} deleted successfully")
+            # 返回 200 并带 JSON，让前端能解析
+            return Response({"message": "账号已成功删除"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Delete failed: {str(e)}", exc_info=True)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 # ======================== 许可证管理视图（单表：User 包含许可证） ========================
 class ActivateLicenseView(APIView):

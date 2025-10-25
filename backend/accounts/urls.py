@@ -12,7 +12,8 @@ from .views import (
     ValidateLicenseView,
     GetMyLicenseView,
     GetFileDecryptKeyView,
-    GetCourseMapView
+    GetCourseMapView,
+    DeleteUserView,
 )
 # check
 app_name = 'accounts'
@@ -24,7 +25,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('me/', CurrentUserView.as_view(), name='current-user'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
-    
+    path("delete/", DeleteUserView.as_view(), name="delete_user"),
     # ========== 许可证管理接口 ==========
     path('license/activate/', ActivateLicenseView.as_view(), name='license-activate'),
     path('license/validate/', ValidateLicenseView.as_view(), name='license-validate'),
