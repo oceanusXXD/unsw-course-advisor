@@ -12,17 +12,13 @@
 
 ### [高] 功能完善与占位符替换
 
-- **InputPanel.tsx**：实现文件上传功能 (`handleUploadClick`)，允许用户上传加密文件或选课列表。
+- **InputPanel.tsx**：实现文件上传功能 (`handleUploadClick`)，允许用户上传加密文件或选课列表。DONE
 - **SettingsProfileSection.tsx**：实现头像上传 (`handleFileChange`)，更新用户信息并提供 UI 反馈。
-- **SettingsAccountSection.tsx**：实现删除账户功能，需后端 API 支持并添加确认提示。
-
-### [高] 依赖版本校准
-
-- **package.json**：调整 `@types/react` 和 `@types/react-dom` 版本，使其与 `react` 和 `react-dom (v18)` 一致。
+- **SettingsAccountSection.tsx**：实现删除账户功能，需后端 API 支持并添加确认提示。 DONE
 
 ### [中] 配置与环境
 
-- **src/services/api.ts**：将硬编码的 `API_BASE` 修改为从 `Vite` 环境变量 `import.meta.env.VITE_API_BASE_URL` 读取。
+- **src/services/api.ts**：将硬编码的 `API_BASE` 修改为从 `Vite` 环境变量 `import.meta.env.VITE_API_BASE_URL` 读取。DONE
 
 ### [中] RAG 结果展示
 
@@ -31,20 +27,15 @@
 
 ### [中] 错误处理与用户反馈
 
-- 全局检查 `api.ts` 与各组件中的 `catch` 块，通过 `Toaster` 或组件消息提示错误，而非仅 `console.error`。
+- 全局检查 `api.ts` 与各组件中的 `catch` 块，通过 `Toaster` 或组件消息提示错误，而非仅 `console.error`。DONE
 
 ### [低] 性能优化
 
-- **ChatContext.tsx**：优化聊天记录的 `localStorage` 持久化策略（使用节流或改用 IndexedDB）。
-- 移除组件中的 `MutationObserver`，改用 `CSS 变量` 或 `Context API` 实现主题切换。
-
-### [低] 代码复用
-
-- 将 `api.ts` 中的加密/解密函数提取到 `src/utils/crypto.ts` 以便未来与 Chrome 插件共享。
+- **ChatContext.tsx**：优化聊天记录的 `localStorage` 持久化.DONE
 
 ### [低] UI/UX 细节
 
-- 优化响应式布局与可访问性（添加 `aria-label` 等）。
+- 优化响应式布局与可访问性。
 
 ---
 
