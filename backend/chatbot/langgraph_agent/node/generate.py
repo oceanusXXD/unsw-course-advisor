@@ -4,7 +4,7 @@ import random
 import time
 from core import TOOL_REGISTRY, USE_FAST_ROUTER, ROUTING_MODEL_URL, ROUTING_MODEL_NAME, ROUTING_MODEL_KEY, QWEN_MODEL, ENABLE_VERBOSE_LOGGING, call_qwen_sync
 
-from prompt_loader import load_prompts
+from .prompt_loader import load_prompts
 
 model = QWEN_MODEL
 base_url = ROUTING_MODEL_URL if USE_FAST_ROUTER and ROUTING_MODEL_URL and ROUTING_MODEL_NAME else None
@@ -130,7 +130,6 @@ def node_generate(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"answer": _string_to_llm_stream(answer_text)}
 
     
-    # 从 prompt_loader 导入 load_prompts()
     prompts = load_prompts()
     
     system_prompt = ""

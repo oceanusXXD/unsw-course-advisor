@@ -1,6 +1,5 @@
 // src/services/api.ts
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const API_BASE = "http://localhost:8000/api/";
+const API_BASE = import.meta.env.VITE_API_BASE;
 console.log(API_BASE);
 export interface MakeRequestOptions {
   method?: string;
