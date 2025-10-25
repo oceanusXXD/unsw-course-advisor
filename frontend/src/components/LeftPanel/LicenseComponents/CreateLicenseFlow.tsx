@@ -4,13 +4,11 @@ import {
     FiArrowLeft,
     FiGift,
     FiAlertTriangle,
-    FiCopy,
-    FiXCircle,
-    FiX,
 } from "react-icons/fi";
 import { useAuth } from "../../../context/AuthContext";
 import { activateLicense } from "../../../services/api";
-import { Spinner, Alert, KeyDisplay } from '../../common/CommonUI';
+import { Toaster, useToaster } from "../../Toaster/Toaster";
+import { Spinner, KeyDisplay } from '../../common/CommonUI';
 
 interface NewLicenseDetails {
     license_key: string;
@@ -27,19 +25,20 @@ interface Props {
 const CreateLicenseFlow: React.FC<Props> = ({ onBack, onFinish }) => {
     const { refreshUser } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [newLicenseDetails, setNewLicenseDetails] = useState<NewLicenseDetails | null>(null);
+
+    const { toasts, removeToast, showSuccess, showError } = useToaster();
 
     /** Handle Create License API Call */
     const handleCreateLicense = async () => {
         setIsLoading(true);
-        setError(null);
         try {
             const data: NewLicenseDetails = await activateLicense(31);
             setNewLicenseDetails(data);
+            showSuccess("试用许可证创建成功！");
             if (refreshUser) await refreshUser();
         } catch (err: any) {
-            setError(err.message || "Failed to create license. You might already have one.");
+            showError(err.message || "创建许可证失败。你可能已经拥有一个。");
         }
         setIsLoading(false);
     };
@@ -47,7 +46,6 @@ const CreateLicenseFlow: React.FC<Props> = ({ onBack, onFinish }) => {
     const renderCreateButton = () => (
         <div className="p-4 space-y-4">
             {isLoading && <div className="absolute inset-0 bg-white/50 dark:bg-neutral-800/50 flex items-center justify-center z-10"><Spinner /></div>}
-            {error && <Alert message={error} onClose={() => setError(null)} />}
             <button
                 type="button"
                 onClick={onBack}
@@ -110,6 +108,7 @@ const CreateLicenseFlow: React.FC<Props> = ({ onBack, onFinish }) => {
 
     return (
         <div className="relative overflow-y-auto max-h-96">
+            <Toaster toasts={toasts} onRemove={removeToast} />
             {newLicenseDetails ? renderShowingNewKeys() : renderCreateButton()}
         </div>
     );

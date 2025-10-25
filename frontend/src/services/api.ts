@@ -260,6 +260,14 @@ export async function changePassword(oldPassword: string, newPassword: string) {
   });
 }
 
+export async function deleteAccount(token?: string) {
+  return await _makeRequest("accounts/delete/", {
+    method: "DELETE",
+    useAuth: true,
+    token,
+  });
+}
+
 // License
 /**
  * 辅助函数：获取或创建并存储一个唯一的设备 ID

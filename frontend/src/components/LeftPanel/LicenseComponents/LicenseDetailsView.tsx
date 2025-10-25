@@ -1,12 +1,10 @@
-// src/components/LeftPanel/LicenseDetailsView.tsx
-
 import React, { useState } from "react";
-import { FiEye, FiShield, FiMonitor, FiCalendar, FiCopy } from "react-icons/fi";
+import { FiEye, FiShield, FiMonitor, FiCalendar } from "react-icons/fi";
 import { AuthUser } from "../BottomComponents/BottomPanelTypes";
 import { getMyLicense } from "../../../services/api";
+import { Toaster, useToaster } from "../../Toaster/Toaster";
 import {
     Spinner,
-    Alert,
     KeyDisplay,
     InfoDisplay,
     CheckCircleIcon,
@@ -28,25 +26,22 @@ type DetailsViewState = "idle" | "showing_keys";
 const LicenseDetailsView: React.FC<Props> = ({ user }) => {
     const [viewState, setViewState] = useState<DetailsViewState>("idle");
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [licenseDetails, setLicenseDetails] = useState<LicenseDetails | null>(
-        null,
-    );
+    const [licenseDetails, setLicenseDetails] = useState<LicenseDetails | null>(null);
+    const { toasts, removeToast, showSuccess, showError } = useToaster();
 
-    /** Get current user's license details */
     const handleViewLicense = async () => {
         setIsLoading(true);
-        setError(null);
         try {
             const data: LicenseDetails = await getMyLicense();
             if (data && data.license_key) {
                 setLicenseDetails(data);
                 setViewState("showing_keys");
+                showSuccess("许可证详情获取成功。");
             } else {
                 throw new Error("Could not retrieve license information.");
             }
         } catch (err: any) {
-            setError(err.message || "Failed to fetch license details.");
+            showError(err.message || "Failed to fetch license details.");
         }
         setIsLoading(false);
     };
@@ -71,7 +66,6 @@ const LicenseDetailsView: React.FC<Props> = ({ user }) => {
                     <Spinner />
                 </div>
             )}
-            {error && <Alert message={error} onClose={() => setError(null)} />}
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-center border border-yellow-200 dark:border-yellow-800/50">
                 <CheckCircleIcon className="mx-auto h-10 w-10 text-yellow-500" />
                 <h5 className="mt-2 text-lg font-semibold text-yellow-700 dark:text-yellow-300">
@@ -83,8 +77,7 @@ const LicenseDetailsView: React.FC<Props> = ({ user }) => {
             </div>
             <button
                 onClick={handleViewLicense}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-neutral-100 
-                dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition text-sm"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition text-sm"
                 disabled={isLoading}
             >
                 <FiEye size={16} />
@@ -95,7 +88,6 @@ const LicenseDetailsView: React.FC<Props> = ({ user }) => {
 
     const renderShowingKeys = () => (
         <div className="p-4 space-y-4">
-            {error && <Alert message={error} onClose={() => setError(null)} />}
             <div className="text-center">
                 <FiShield className="mx-auto text-4xl text-green-500" />
                 <h5 className="mt-2 font-semibold text-neutral-800 dark:text-neutral-100">
@@ -114,6 +106,7 @@ const LicenseDetailsView: React.FC<Props> = ({ user }) => {
                 </label>
                 <InfoDisplay
                     value={licenseDetails?.device_id || "Loading..."}
+                    key-value
                     icon={<FiMonitor />}
                 />
             </div>
@@ -132,15 +125,13 @@ const LicenseDetailsView: React.FC<Props> = ({ user }) => {
             </div>
             <button
                 onClick={() => setViewState("idle")}
-                className="w-full py-2.5 px-3 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 
-                dark:text-neutral-200 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition text-sm"
+                className="w-full py-2.5 px-3 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition text-sm"
             >
                 Hide Details
             </button>
         </div>
     );
 
-    // Main render logic
     const renderContent = () => {
         switch (viewState) {
             case "idle":
@@ -153,7 +144,10 @@ const LicenseDetailsView: React.FC<Props> = ({ user }) => {
     };
 
     return (
-        <div className="relative overflow-y-auto max-h-96">{renderContent()}</div>
+        <div className="relative overflow-y-auto max-h-96">
+            <Toaster toasts={toasts} onRemove={removeToast} />
+            {renderContent()}
+        </div>
     );
 };
 

@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useFileUpload } from '../hooks/useFileUpload';
+import { UploadButton } from './UploadButton';
+import { FilePreviewList } from './FilePreviewList';
 
 interface InputPanelProps {
   onSearch?: (q: string) => void;
-  onSubmit?: () => void;
+  onSubmit?: (files?: File[]) => void;
   isLoading?: boolean;
   onStop?: () => void;
   hasError?: boolean;
@@ -22,6 +25,21 @@ const InputPanel: React.FC<InputPanelProps> = ({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isDark, setIsDark] = useState(false);
+
+  // 使用文件上传 hook
+  const {
+    uploadedFiles,
+    errors: uploadErrors,
+    fileInputRef,
+    handleFiles,
+    removeFile,
+    clearFiles,
+    openFilePicker,
+  } = useFileUpload({
+    maxFiles: 5,
+    maxSize: 10 * 1024 * 1024,
+    acceptedTypes: ['image/*', 'application/pdf', '.txt', '.doc', '.docx'],
+  });
 
   useEffect(() => {
     const checkDarkMode = () =>
@@ -60,15 +78,18 @@ const InputPanel: React.FC<InputPanelProps> = ({
       onStop?.();
       return;
     }
-    if (!query.trim()) {
+    if (!query.trim() && uploadedFiles.length === 0) {
       setLocalError(true);
       setIsFocused(false);
       return;
     }
+
     onSearch?.(query.trim());
-    onSubmit?.();
+    onSubmit?.(uploadedFiles.map(f => f.file));
+
     setQuery("");
     setLocalError(false);
+    clearFiles();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -94,14 +115,8 @@ const InputPanel: React.FC<InputPanelProps> = ({
     }
   };
 
-  // 2. 为“上传”按钮创建点击处理程序
-  const handleUploadClick = () => {
-    console.log("点击成功");
-    // TODO
-  };
-
   const containerBaseClass =
-    "relative flex items-end self-stretch py-3 px-4 rounded-3xl transition-all duration-300";
+    "relative flex flex-col self-stretch py-3 px-4 rounded-3xl transition-all duration-300";
 
   const darkBg = "#262626";
   const lightBg = "white";
@@ -109,7 +124,7 @@ const InputPanel: React.FC<InputPanelProps> = ({
   const lightBorder = "#E5E7EB";
 
   let containerStyle: React.CSSProperties = {};
-  if (effectiveError) {
+  if (effectiveError || uploadErrors.length > 0) {
     containerStyle = {
       border: "2px solid rgba(239,68,68,0.5)",
       boxShadow: isDark
@@ -136,10 +151,8 @@ const InputPanel: React.FC<InputPanelProps> = ({
   }
 
   const containerFocusClass =
-    (effectiveError ? "bg-white" : isFocused ? "bg-white" : "bg-gray-50") +
+    (effectiveError || uploadErrors.length > 0 ? "bg-white" : isFocused ? "bg-white" : "bg-gray-50") +
     " dark:bg-neutral-800";
-
-  const defaultStroke = isDark ? "#a3a3a3" : "#9CA3AF";
 
   const shakeKeyframes = `
 @keyframes shake {
@@ -161,103 +174,100 @@ const InputPanel: React.FC<InputPanelProps> = ({
         className={`${containerBaseClass} ${containerFocusClass}`}
         style={containerStyle}
       >
-        <button
-          type="button"
-          onClick={handleUploadClick}
-          onMouseDown={(e) => e.preventDefault()} //
-          disabled={isLoading}
-          className="mr-3 flex-shrink-0 mb-1.5 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors duration-150"
-          aria-label="Upload file"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path
-              d="M9 3.75V14.25"
-              stroke={
-                effectiveError
-                  ? "#EF4444"
-                  : isFocused
-                    ? "#F59E0B"
-                    : defaultStroke
-              }
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M3.75 9H14.25"
-              stroke={
-                effectiveError
-                  ? "#EF4444"
-                  : isFocused
-                    ? "#F59E0B"
-                    : defaultStroke
-              }
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-
-        {/*多行输入框*/}
-        <textarea
-          ref={textareaRef}
-          placeholder="Ask about courses (Shift + Enter for new line)"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            if (localError && e.target.value.trim()) setLocalError(false);
-          }}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          disabled={isLoading}
-          rows={1}
-          className={`flex-1 resize-none text-base bg-transparent border-0 outline-none 
-                      placeholder:text-gray-400 dark:placeholder:text-neutral-500
-                      disabled:text-gray-500 disabled:placeholder:text-gray-300
-                      dark:disabled:text-neutral-600 dark:disabled:placeholder:text-neutral-700
-                      py-1.5 
-                      ${effectiveError
-              ? "placeholder:text-red-300 dark:placeholder:text-red-500/70 text-red-700 dark:text-red-300"
-              : "text-black dark:text-neutral-100"
-            }`}
-          style={{
-            caretColor: effectiveError
-              ? "#B91C1C"
-              : isFocused
-                ? "#F59E0B"
-                : isDark
-                  ? "#e5e5e5"
-                  : undefined,
-          }}
+        {/* 文件预览列表 */}
+        <FilePreviewList
+          files={uploadedFiles}
+          onRemove={removeFile}
+          isDark={isDark}
         />
 
-        {/* 提交/停止按钮*/}
-        <button
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleSubmit}
-          className={`flex items-center justify-center w-9 h-9 ml-2 rounded-2xl flex-shrink-0 transition-all duration-200 ${isLoading
-            ? "bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70"
-            : "bg-gradient-to-r from-yellow-400 to-red-600 hover:from-yellow-500 hover:to-red-700 hover:shadow-md dark:from-yellow-400 dark:to-red-500 dark:hover:from-yellow-500 dark:hover:to-red-600"
-            }`}
-        >
-          {isLoading ? (
-            <span className="text-sm font-bold text-red-600 dark:text-red-300">
-              ■
-            </span>
-          ) : (
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="text-white"
-            >
-              <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-            </svg>
-          )}
-        </button>
+        {/* 错误提示 */}
+        {uploadErrors.length > 0 && (
+          <div className="mb-2 text-sm text-red-600 dark:text-red-400">
+            {uploadErrors.map((err, i) => (
+              <div key={i}>{err.file}: {err.message}</div>
+            ))}
+          </div>
+        )}
+
+        {/* 输入区域 */}
+        <div className="flex items-end">
+          <UploadButton
+            onClick={openFilePicker}
+            disabled={isLoading}
+            isError={effectiveError || uploadErrors.length > 0}
+            isFocused={isFocused}
+            isDark={isDark}
+          />
+
+          {/* 隐藏的文件输入 */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.txt,.doc,.docx"
+            onChange={(e) => handleFiles(e.target.files)}
+            className="hidden"
+          />
+
+          <textarea
+            ref={textareaRef}
+            placeholder="Ask about courses (Shift + Enter for new line)"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              if (localError && e.target.value.trim()) setLocalError(false);
+            }}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            disabled={isLoading}
+            rows={1}
+            className={`flex-1 resize-none text-base bg-transparent border-0 outline-none 
+                        placeholder:text-gray-400 dark:placeholder:text-neutral-500
+                        disabled:text-gray-500 disabled:placeholder:text-gray-300
+                        dark:disabled:text-neutral-600 dark:disabled:placeholder:text-neutral-700
+                        py-1.5 
+                        ${effectiveError || uploadErrors.length > 0
+                ? "placeholder:text-red-300 dark:placeholder:text-red-500/70 text-red-700 dark:text-red-300"
+                : "text-black dark:text-neutral-100"
+              }`}
+            style={{
+              caretColor: effectiveError || uploadErrors.length > 0
+                ? "#B91C1C"
+                : isFocused
+                  ? "#F59E0B"
+                  : isDark
+                    ? "#e5e5e5"
+                    : undefined,
+            }}
+          />
+
+          <button
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={handleSubmit}
+            className={`flex items-center justify-center w-9 h-9 ml-2 rounded-2xl flex-shrink-0 transition-all duration-200 ${isLoading
+              ? "bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70"
+              : "bg-gradient-to-r from-yellow-400 to-red-600 hover:from-yellow-500 hover:to-red-700 hover:shadow-md dark:from-yellow-400 dark:to-red-500 dark:hover:from-yellow-500 dark:hover:to-red-600"
+              }`}
+          >
+            {isLoading ? (
+              <span className="text-sm font-bold text-red-600 dark:text-red-300">
+                ■
+              </span>
+            ) : (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="text-white"
+              >
+                <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
     </>
   );

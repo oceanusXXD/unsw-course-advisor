@@ -5,6 +5,8 @@ import { FiArrowLeft } from "react-icons/fi";
 import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 
+import { useToaster, Toaster } from "../Toaster/Toaster";
+
 import SettingsProfileSection from "./SettingsProfileSection";
 import SettingsAppearanceSection from "./SettingsAppearanceSection";
 import SettingsSecuritySection from "./SettingsSecuritySection";
@@ -14,15 +16,30 @@ const SettingsPage: React.FC = () => {
     const { navigateTo } = useAppContext();
     const { authState, logout } = useAuth();
 
+    const {
+        toasts,
+        removeToast,
+        showSuccess,
+        showError
+    } = useToaster();
+
     // --- Logout Handler ---
     const handleLogout = async () => {
         if (window.confirm("Are you sure you want to log out?")) {
-            await logout();
+            try {
+                await logout();
+                showSuccess("已成功登出。");
+            } catch (error: any) {
+                showError(error?.message || "登出失败，请重试。");
+            }
         }
     };
 
     return (
-        <div className="w-full h-full max-w-5xl mx-auto p-6 lg:p-10 space-y-10 text-neutral-800 dark:text-neutral-200">
+        // z-index 确保 Toaster 总在最上层
+        <div className="w-full h-full max-w-5xl mx-auto p-6 lg:p-10 space-y-10 text-neutral-800 dark:text-neutral-200 relative">
+            <Toaster toasts={toasts} onRemove={removeToast} />
+
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => navigateTo("chat")}
@@ -39,17 +56,27 @@ const SettingsPage: React.FC = () => {
                 </h1>
             </div>
 
-            {/* 2. Profile Section */}
-            <SettingsProfileSection user={authState.user} />
+            <SettingsProfileSection
+                user={authState.user}
+                showSuccess={showSuccess}
+                showError={showError}
+            />
 
             {/* 3. Appearance Section */}
             <SettingsAppearanceSection />
 
             {/* 4. Security Section */}
-            <SettingsSecuritySection />
+            <SettingsSecuritySection
+                showSuccess={showSuccess}
+                showError={showError}
+            />
 
             {/* 5. Account Section */}
-            <SettingsAccountSection onLogout={handleLogout} />
+            <SettingsAccountSection
+                onLogout={handleLogout}
+                showSuccess={showSuccess}
+                showError={showError}
+            />
         </div>
     );
 };

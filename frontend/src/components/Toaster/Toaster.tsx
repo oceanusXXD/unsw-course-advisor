@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src\components\Toaster\Toaster.tsx
+import React, { useState, useEffect, useCallback } from "react";
 
 // --- Toaster ---
 type ToastType = "success" | "error" | "info" | "warning";
@@ -11,19 +12,23 @@ interface Toast {
 
 export const useToaster = () => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+
   const addToast = (message: string, type: ToastType = "info", duration = 3000) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
     setToasts((prev) => [...prev, { id, message, type, duration }]);
   };
-  const removeToast = (id: string) => {
+
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
+  }, []);
+
   return {
     toasts,
     removeToast,
     showSuccess: (msg: string, dur?: number) => addToast(msg, "success", dur),
     showError: (msg: string, dur?: number) => addToast(msg, "error", dur),
     showInfo: (msg: string, dur?: number) => addToast(msg, "info", dur),
+    showWarning: (msg: string, dur?: number) => addToast(msg, "warning", dur),
   };
 };
 

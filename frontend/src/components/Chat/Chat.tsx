@@ -131,52 +131,30 @@ const Chat: React.FC<ChatProps> = ({ onSources }) => {
                     aria-disabled={streamingLoading}
                     aria-label={`发送预设: ${preset}`}
                     style={{ animationDelay: `${index * 0.12}s` }}
-                    className={`
-       relative w-full flex items-center justify-between gap-4 px-6 py-4 rounded-2xl
-       overflow-hidden
-       bg-white dark:bg-neutral-900
-       shadow-sm hover:shadow-md
-       transform motion-safe:transition motion-safe:duration-200 motion-safe:ease-out
-       disabled:opacity-50 disabled:cursor-not-allowed
-       focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-900
-       focus-visible:ring-yellow-400 dark:focus-visible:ring-yellow-300
-       group
-       `}
+                    className="relative w-full flex items-center justify-between gap-4 px-6 py-4 rounded-2xl overflow-hidden 
+                    bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md transform motion-safe:transition motion-safe:duration-200 
+                    motion-safe:ease-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2
+                     focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-900 
+                     focus-visible:ring-yellow-400 dark:focus-visible:ring-yellow-300 group"
                   >
                     <span
                       aria-hidden="true"
-                      className={`
-        pointer-events-none absolute inset-0 rounded-2xl
-        before:absolute before:inset-0 before:rounded-2xl
-        before:bg-gradient-to-r before:from-yellow-50 before:to-red-50
-        dark:before:from-yellow-600 dark:before:to-red-600
-        before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-300
-        after:absolute after:inset-[1px] after:rounded-2xl after:bg-white dark:after:bg-neutral-900
-        `}
+                      className="pointer-events-none absolute inset-0 rounded-2xl before:absolute before:inset-0 before:rounded-2xl
+                       before:bg-gradient-to-r before:from-yellow-50 before:to-red-50 dark:before:from-yellow-600 
+                       dark:before:to-red-600 before:opacity-0 group-hover:before:opacity-100 before:transition-opacity
+                        before:duration-300 after:absolute after:inset-[1px] after:rounded-2xl after:bg-white dark:after:bg-neutral-900"
                     />
 
                     <span className="relative z-10 flex-1 text-left">
-                      <span
-                        className={`
-         text-lg font-medium
-         text-black dark:text-white
-         block
-         line-clamp-2
-         `}
-                      >
+                      <span className="text-lg font-medium text-black dark:text-white block line-clamp-2">
                         {preset}
                       </span>
                     </span>
 
                     <FiArrowRight
-                      className={`
-        relative z-10 w-5 h-5
-        text-gray-400 dark:text-neutral-500
-        transform transition-all duration-200
-        opacity-0 -translate-x-2
-        group-hover:opacity-100 group-hover:translate-x-0
-        motion-reduce:transition-none motion-reduce:translate-x-0 motion-reduce:opacity-100
-        `}
+                      className="relative z-10 w-5 h-5 text-gray-400 dark:text-neutral-500 transform transition-all 
+                      duration-200 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0
+                       motion-reduce:transition-none motion-reduce:translate-x-0 motion-reduce:opacity-100"
                       aria-hidden="true"
                     />
                   </button>
@@ -207,7 +185,6 @@ const Chat: React.FC<ChatProps> = ({ onSources }) => {
           />
         </div>
       </div>
-
     </div>
   );
 };

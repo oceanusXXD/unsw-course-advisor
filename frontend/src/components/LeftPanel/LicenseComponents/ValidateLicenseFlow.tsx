@@ -1,14 +1,9 @@
-// src/components/LeftPanel/ValidateLicenseFlow.tsx
 import React, { useState } from "react";
-import {
-    FiArrowLeft,
-    FiLogIn,
-    FiXCircle,
-    FiX,
-} from "react-icons/fi";
+import { FiArrowLeft, FiLogIn } from "react-icons/fi";
 import { useAuth } from "../../../context/AuthContext";
 import { validateLicense } from "../../../services/api";
-import { Spinner, Alert } from '../../common/CommonUI';
+import { Toaster, useToaster } from "../../Toaster/Toaster";
+import { Spinner } from '../../common/CommonUI';
 
 interface Props {
     onBack: () => void;
@@ -18,29 +13,34 @@ interface Props {
 const ValidateLicenseFlow: React.FC<Props> = ({ onBack, onSuccess }) => {
     const { refreshUser } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [activationKey, setActivationKey] = useState("");
+    const { toasts, removeToast, showSuccess, showError } = useToaster();
 
-    /** Handle Validate License API Call */
     const handleValidateLicense = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setError(null);
         try {
             await validateLicense(activationKey);
             setActivationKey("");
-            onSuccess(); // Signal success
-            if (refreshUser) await refreshUser(); // Refresh auth state
+            onSuccess();
+            if (refreshUser) await refreshUser();
+            showSuccess("许可证已成功激活！");
         } catch (err: any) {
-            setError(err.message || "License key is invalid or already used.");
+            showError(err.message || "许可证密钥无效或已被使用。");
         }
         setIsLoading(false);
     };
 
     return (
         <form onSubmit={handleValidateLicense} className="p-4 space-y-4 relative">
-            {isLoading && <div className="absolute inset-0 bg-white/50 dark:bg-neutral-800/50 flex items-center justify-center z-10"><Spinner /></div>}
-            {error && <Alert message={error} onClose={() => setError(null)} />}
+            <Toaster toasts={toasts} onRemove={removeToast} />
+
+            {isLoading && (
+                <div className="absolute inset-0 bg-white/50 dark:bg-neutral-800/50 flex items-center justify-center z-10">
+                    <Spinner />
+                </div>
+            )}
+
             <button
                 type="button"
                 onClick={onBack}
@@ -48,35 +48,36 @@ const ValidateLicenseFlow: React.FC<Props> = ({ onBack, onSuccess }) => {
                 disabled={isLoading}
             >
                 <FiArrowLeft size={12} /> Back to options
-
             </button>
+
             <div className="text-center">
                 <FiLogIn className="mx-auto text-4xl text-neutral-400" />
                 <h5 className="mt-2 font-semibold text-neutral-800 dark:text-neutral-100">
                     Validate Your License
                 </h5>
             </div>
+
             <div className="space-y-2">
                 <label htmlFor="license-key-validate" className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                     License Key
                 </label>
                 <input
-                    id="license-key-validate" type="text" value={activationKey}
+                    id="license-key-validate"
+                    type="text"
+                    value={activationKey}
                     onChange={(e) => setActivationKey(e.target.value)}
                     placeholder="LIC-XXXX-XXXX-XXXX"
-                    className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-lg 
-                    bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-neutral-900 dark:text-neutral-100"
+                    className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-neutral-900 dark:text-neutral-100"
                     disabled={isLoading}
                 />
             </div>
+
             <button
                 type="submit"
-                className="w-full py-2.5 px-3 bg-yellow-400 text-black font-semibold rounded-lg 
-                hover:bg-yellow-500 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 px-3 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-500 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading || activationKey.length < 8}
             >
                 {isLoading ? "Validating..." : "Validate & Activate"}
-
             </button>
         </form>
     );

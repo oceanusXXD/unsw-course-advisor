@@ -5,7 +5,6 @@ import RightPanel, { ResultItem } from "./components/RightPanel/RightPanel";
 import ResizeHandle from "./components/ResizeHandle/ResizeHandle";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
-import { imageUrls } from "./assets/assets";
 import "./index.css";
 
 import { AppProvider, useAppContext } from "./context/AppContext";

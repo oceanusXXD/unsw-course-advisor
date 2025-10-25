@@ -10,14 +10,13 @@ import {
     FiBookmark,
 } from "react-icons/fi";
 import { useChat } from "../../context/ChatContext";
-import { useAuth } from "../../context/AuthContext";
+import { useToaster, Toaster } from "../Toaster/Toaster";
 
 interface Props {
     searchTerm: string;
     setSearchTerm: (s: string) => void;
     onNewChat: () => void;
     onSelectChat: (id: string) => void;
-    onDeleteChat: (e: React.MouseEvent, id: string) => void;
 }
 
 const MiddlePanel: React.FC<Props> = ({
@@ -25,9 +24,9 @@ const MiddlePanel: React.FC<Props> = ({
     setSearchTerm,
     onNewChat,
     onSelectChat,
-    onDeleteChat,
 }) => {
-    const { chats, currentChat } = useChat();
+    const { chats, currentChat, deleteChat } = useChat();
+    const { toasts, removeToast, showSuccess, showError } = useToaster();
 
     const [isHistoryOpen, setHistoryOpen] = useState<boolean>(true);
     const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
@@ -36,9 +35,22 @@ const MiddlePanel: React.FC<Props> = ({
         (chat.title ?? "").toLowerCase().includes((searchTerm ?? "").toLowerCase()),
     );
 
+    const handleDeleteChat = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!window.confirm("确定要永久删除这个聊天吗？")) return;
+
+        try {
+            await deleteChat(id);
+            showSuccess("聊天已删除。");
+        } catch (error: any) {
+            showError(error?.message || "删除失败，请重试。");
+        }
+    };
+
     return (
-        <div className="flex-1 flex flex-col w-full px-3 pb-3 overflow-hidden">
-            {/* 搜索框 */}
+        <div className="flex-1 flex flex-col w-full px-3 pb-3 overflow-hidden relative">
+            <Toaster toasts={toasts} onRemove={removeToast} />
+
             <div className="pt-4 pb-5">
                 <div className="relative">
                     <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
@@ -50,13 +62,13 @@ const MiddlePanel: React.FC<Props> = ({
                         aria-label="搜索聊天"
                         className="w-full pl-11 pr-9 py-3 rounded-2xl bg-gray-100 dark:bg-neutral-800 focus:outline-none 
                         focus:ring-2 focus:ring-gray-300 dark:focus:ring-neutral-600 text-base text-gray-700 dark:text-neutral-100
-                         placeholder-gray-400 dark:placeholder-neutral-500 transition"
+                        placeholder-gray-400 dark:placeholder-neutral-500 transition"
                     />
                     {searchTerm && (
                         <button
                             onClick={() => setSearchTerm("")}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500
-                             hover:text-gray-600 dark:hover:text-neutral-300 transition"
+                            hover:text-gray-600 dark:hover:text-neutral-300 transition"
                             aria-label="清除搜索"
                         >
                             ×
@@ -77,7 +89,6 @@ const MiddlePanel: React.FC<Props> = ({
                 </button>
             </div>
 
-            {/* 历史记录部分 */}
             <nav
                 className="flex-grow space-y-3 text-gray-700 dark:text-neutral-300 overflow-y-auto"
                 aria-label="Sidebar navigation"
@@ -111,8 +122,7 @@ const MiddlePanel: React.FC<Props> = ({
                                             <button
                                                 onClick={() => onSelectChat(chat.id)}
                                                 className={`w-full text-left py-2 px-3 rounded-xl flex items-center
-                                                     gap-2 transition truncate text-sm ${currentChat?.id ===
-                                                        chat.id
+                                                gap-2 transition truncate text-sm ${currentChat?.id === chat.id
                                                         ? "bg-gray-200 text-gray-900 dark:bg-neutral-600 dark:text-neutral-100 font-semibold"
                                                         : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800"
                                                     }`}
@@ -128,7 +138,7 @@ const MiddlePanel: React.FC<Props> = ({
 
                                             {hoveredChatId === chat.id && (
                                                 <button
-                                                    onClick={(e) => onDeleteChat(e, chat.id)}
+                                                    onClick={(e) => handleDeleteChat(e, chat.id)}
                                                     className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-gray-400 
                                                     dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 transition"
                                                     title="删除聊天"
@@ -148,14 +158,13 @@ const MiddlePanel: React.FC<Props> = ({
                     )}
                 </div>
 
-                {/* 底部导航项 */}
                 <div className="pt-5 space-y-3">
                     <a
                         href="#"
-                        className="w-full flex items-center gap-3 py-3 px-4 rounded-2xl hover:bg-gray-100 
+                        className="w-full flex items-center gap-3 py-3 px-4 rounded-2xl hover:bg-gray-100
                         dark:hover:bg-neutral-800 transition text-base text-gray-700 dark:text-neutral-300 font-medium"
                     >
-                        <FiFileText className="text-gray-600 dark:text-neutral-400" />{" "}
+                        <FiFileText className="text-gray-600 dark:text-neutral-400" />
                         <span>Documents</span>
                     </a>
                     <a
@@ -163,7 +172,7 @@ const MiddlePanel: React.FC<Props> = ({
                         className="w-full flex items-center gap-3 py-3 px-4 rounded-2xl hover:bg-gray-100 
                         dark:hover:bg-neutral-800 transition text-base text-gray-700 dark:text-neutral-300 font-medium"
                     >
-                        <FiBookmark className="text-gray-600 dark:text-neutral-400" />{" "}
+                        <FiBookmark className="text-gray-600 dark:text-neutral-400" />
                         <span>Saved</span>
                     </a>
                 </div>
