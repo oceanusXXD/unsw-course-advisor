@@ -1,0 +1,124 @@
+[
+    {
+        "id": "sentry",
+        "label": "Sentry envelope",
+        "urlTemplate": "https://sentry.tools.stellic.com/api/3/envelope/?sentry_key=2b9ecceef8005b414b45e39a38aadba0&sentry_version=7",
+        "method": "GET",
+        "needsAuth": false,
+        "placeholders": []
+    },
+    {
+        "id": "audit",
+        "label": "getauditinfo",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getauditinfo/",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": []
+    },
+    {
+        "id": "prereq",
+        "label": "getprereqchain",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getprereqchain/?plan_id={{plan_id}}",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": [
+            "plan_id"
+        ]
+    },
+    {
+        "id": "sections",
+        "label": "getcoursesections",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getcoursesections/?course_code={{course_code}}&physical_year={{physical_year}}&plan_id={{plan_id}}&sem_id=4&year=1",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": [
+            "course_code",
+            "physical_year",
+            "plan_id"
+        ]
+    },
+    {
+        "id": "courseinfo",
+        "label": "getcourseinfo",
+        "urlTemplate": "https://myplan.unsw.edu.au/catalog/getcourseinfo/?course_code={{course_code}}&id={{id}}&physical_year={{physical_year}}&plan_id={{plan_id}}&semester=4&student_username={{student_username}}&year=1",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": [
+            "course_code",
+            "id",
+            "physical_year",
+            "plan_id",
+            "student_username"
+        ]
+    },
+    {
+        "id": "analytics_e",
+        "label": "analytics.e",
+        "urlTemplate": "https://analytics.stellic.com/e/?ip=1&_=1760592333003&ver=1.236.7&compression=gzip-js",
+        "method": "GET",
+        "needsAuth": false,
+        "placeholders": []
+    },
+    {
+        "id": "milestones",
+        "label": "getmilestonessummary",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getmilestonessummary/",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": []
+    },
+    {
+        "id": "coursesummary",
+        "label": "getcourseandunitssummary",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getcourseandunitssummary/",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": []
+    },
+    {
+        "id": "conflict",
+        "label": "getconflictsemesters",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getconflictsemesters/?plan_id={{plan_id}}",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": [
+            "plan_id"
+        ]
+    },
+    {
+        "id": "decide",
+        "label": "analytics.decide",
+        "urlTemplate": "https://analytics.stellic.com/decide/?v=4&ip=1&_=1760592330161&ver=1.236.7&compression=base64",
+        "method": "GET",
+        "needsAuth": false,
+        "placeholders": []
+    },
+    {
+        "id": "alllevels",
+        "label": "getalllevels",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getalllevels/",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": []
+    },
+    {
+        "id": "planreview",
+        "label": "plan-review-summary",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/plan-review-summary/?student_username={{student_username}}",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": [
+            "student_username"
+        ]
+    },
+    {
+        "id": "programreq",
+        "label": "getprogramsrequirements",
+        "urlTemplate": "https://myplan.unsw.edu.au/planner/getprogramsrequirements/?audit=13947&plan={{plan_id}}&program_id=1009&programs=1009",
+        "method": "GET",
+        "needsAuth": true,
+        "placeholders": [
+            "plan_id"
+        ]
+    }
+]

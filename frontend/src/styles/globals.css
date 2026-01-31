@@ -1,0 +1,173 @@
+@import './tokens.css';
+
+/* ========================================
+   [Web] 全局重置与基础样式
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  /*  背景：使用变量控制的图片 + 微妙渐变叠加 */
+  background-image: var(--brand-gradient), var(--bg-image);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+  position: relative;
+
+  /* 字体设置 */
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Helvetica Neue', 'Arial', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg);
+  overflow: hidden;
+}
+
+/*  背景图片叠加层（优化：降低不透明度 + 移除模糊） */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: var(--bg-blur);
+  -webkit-backdrop-filter: var(--bg-blur);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* [Result] 微妙颗粒纹理（优化：降低强度） */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  mix-blend-mode: soft-light;
+  z-index: 0;
+}
+
+/* 确保内容在叠加层之上 */
+#root {
+  position: relative;
+  z-index: var(--z-base);
+}
+
+/* ========================================
+    焦点与链接
+   ======================================== */
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity var(--duration-base) ease;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* ========================================
+    滚动条美化
+   ======================================== */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-base) ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* ========================================
+    主题切换平滑过渡
+   ======================================== */
+
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color var(--duration-slower) var(--ease-smooth),
+    border-color var(--duration-slower) var(--ease-smooth),
+    color var(--duration-slower) var(--ease-smooth),
+    box-shadow var(--duration-slower) var(--ease-smooth),
+    opacity var(--duration-slower) var(--ease-smooth) !important;
+}
+
+/* ========================================
+    无障碍：减少动画
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+    响应式字体大小
+   ======================================== */
+
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+  }
+}

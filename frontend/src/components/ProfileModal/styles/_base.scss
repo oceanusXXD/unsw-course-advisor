@@ -1,0 +1,347 @@
+// src/components/ProfileModal/styles/_base.scss
+@use './variables';
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay-bg);
+  backdrop-filter: var(--modal-overlay-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 24px;
+
+  // [NEW] 更平滑的进入动画
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: var(--modal-overlay-backdrop);
+  }
+}
+
+.modalContainer {
+  width: 100%;
+  max-width: 800px;
+  max-height: 85vh;
+  border-radius: 20px;
+  border: 1px solid var(--modal-border);
+  background: var(--modal-container-bg);
+  box-shadow: var(--modal-container-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  // [NEW] 提升质感
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      var(--primary-border),
+      transparent 50%,
+      var(--primary-border)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--modal-border);
+  background: linear-gradient(to bottom, var(--primary-gradient-start) 0%, transparent 100%);
+
+  // [NEW] 添加细微渐变
+  position: relative;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0; // 防止内容溢出
+}
+
+.iconWrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+  border: 1px solid var(--primary-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+
+  // [NEW] 添加光晕效果
+  box-shadow: 0 4px 16px rgba(255, 210, 0, 0.15);
+
+  svg {
+    filter: drop-shadow(0 2px 4px rgba(255, 210, 0, 0.2));
+  }
+}
+
+.titleGroup {
+  flex: 1;
+  min-width: 0;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--modal-text-primary);
+  line-height: 1.3;
+
+  // [NEW] 添加渐变文字效果（可选）
+  background: linear-gradient(
+    135deg,
+    var(--modal-text-primary) 0%,
+    var(--modal-text-secondary) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.modalSubtitle {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--modal-text-secondary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.closeBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--modal-border);
+  background: var(--btn-secondary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--modal-text-secondary);
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--btn-secondary-bg-hover);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 210, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.modalBody {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+
+  // [NEW] 优化滚动条样式
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 999px;
+    margin: 8px 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+
+    &:hover {
+      background: var(--scrollbar-thumb-hover);
+      background-clip: content-box;
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 20px;
+  color: var(--modal-text-secondary);
+
+  svg {
+    color: var(--primary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.message.success {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+}
+
+.message.error {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+
+.message.info {
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  color: var(--info-text);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// [NEW] 添加主题切换过渡
+.modalContainer,
+.modalHeader,
+.modalBody,
+.closeBtn,
+.message {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+// 响应式优化
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 16px;
+  }
+
+  .modalContainer {
+    max-height: 92vh;
+    border-radius: 16px;
+  }
+
+  .modalHeader {
+    padding: 20px;
+  }
+
+  .headerLeft {
+    gap: 12px;
+  }
+
+  .iconWrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .modalTitle {
+    font-size: 18px;
+  }
+
+  .modalSubtitle {
+    font-size: 12px;
+  }
+
+  .closeBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .modalBody {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalOverlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modalContainer {
+    max-height: 95vh;
+    border-radius: 20px 20px 0 0;
+    animation: slideUpMobile 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}

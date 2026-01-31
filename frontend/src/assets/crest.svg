@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="title-sun">
+  <title id="title-sun">UNSW Course Advisor - The AI Sun</title>
+  
+  <defs>
+    <rect id="bg-sun" x="4" y="4" width="120" height="120" rx="28" fill="#1A1A1A"/>
+    
+    <linearGradient id="grad-sun" x1="0.5" x2="0.5" y1="0" y2="1">
+      <stop offset="0" stop-color="#FFE776"/>
+      <stop offset="1" stop-color="#FFD200"/>
+    </linearGradient>
+  </defs>
+  
+  <use href="#bg-sun"/>
+  
+  <g fill="url(#grad-sun)" stroke="url(#grad-sun)" stroke-width="8" stroke-linecap="round">
+    
+    <circle cx="64" cy="64" r="14" fill="none" stroke-width="8"/>
+    
+    <line x1="64" y1="42" x2="64" y2="26"/>
+    <line x1="64" y1="86" x2="64" y2="102"/>
+    
+    <line x1="42" y1="64" x2="26" y2="64"/>
+    <line x1="86" y1="64" x2="102" y2="64"/>
+    
+    <line x1="47.5" y1="47.5" x2="36.5" y2="36.5"/>
+    <line x1="80.5" y1="47.5" x2="91.5" y2="36.5"/>
+    <line x1="47.5" y1="80.5" x2="36.5" y2="91.5"/>
+    <line x1="80.5" y1="80.5" x2="91.5" y2="91.5"/>
+  </g>
+</svg>

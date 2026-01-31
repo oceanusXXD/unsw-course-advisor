@@ -1,0 +1,437 @@
+/* ========================================
+    液态玻璃组件库 - 增强版
+   ======================================== */
+
+/*  主要液态玻璃样式（大面板） */
+.glass-liquid {
+  background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    var(--glass-bg);
+  backdrop-filter: var(--glass-blur) var(--glass-sat);
+  -webkit-backdrop-filter: var(--glass-blur) var(--glass-sat);
+  border: 2px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  transition: all var(--duration-slow) var(--ease-smooth);
+}
+
+.glass-liquid:hover {
+  border-color: var(--glass-border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+/*  轻量玻璃样式（小卡片、按钮） */
+.glass-light {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%),
+    var(--surface-weak);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-base) ease;
+}
+
+.glass-light:hover {
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+/*  胶囊样式（输入框等） */
+.glass-pill {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur) var(--glass-sat);
+  -webkit-backdrop-filter: var(--glass-blur) var(--glass-sat);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-base) ease;
+}
+
+.glass-pill:focus-within {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md), var(--focus-ring);
+}
+
+/*  卡片样式（对话卡片、设置卡片等） */
+.glass-card {
+  background: var(--surface-weak);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  transition: all var(--duration-base) var(--ease-smooth);
+  cursor: pointer;
+}
+
+.glass-card:hover {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.glass-card.active {
+  background: linear-gradient(135deg, rgba(255, 210, 0, 0.15), rgba(255, 210, 0, 0.08));
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(255, 210, 0, 0.2);
+}
+
+/*  玻璃按钮（图标按钮） */
+.glass-btn {
+  background: var(--surface-weak);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-base) ease;
+  color: var(--fg);
+}
+
+.glass-btn:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+.glass-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.glass-btn.active {
+  background: linear-gradient(135deg, rgba(255, 210, 0, 0.2), rgba(255, 210, 0, 0.1));
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* [Package] 玻璃容器（用于包裹内容） */
+.glass-container {
+  background: var(--surface-weak);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  transition: all var(--duration-base) ease;
+}
+
+/* [Tag] 玻璃标签页 */
+.glass-tab {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-base) ease;
+  opacity: 0.7;
+}
+
+.glass-tab:hover {
+  opacity: 1;
+  background: var(--surface-weak);
+}
+
+.glass-tab.active {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(255, 210, 0, 0.25), rgba(255, 210, 0, 0.15));
+  color: var(--primary);
+  box-shadow: 0 2px 8px rgba(255, 210, 0, 0.2);
+}
+
+/* [Note] 玻璃输入框 */
+.glass-input {
+  background: var(--surface-weak);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  color: var(--fg);
+  font-size: 14px;
+  transition: all var(--duration-base) ease;
+}
+
+.glass-input::placeholder {
+  color: var(--fg);
+  opacity: 0.5;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow: var(--focus-ring);
+}
+
+/*  玻璃徽章 */
+.glass-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-weak);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.glass-badge.primary {
+  background: linear-gradient(135deg, rgba(255, 210, 0, 0.2), rgba(255, 210, 0, 0.1));
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ========================================
+    按钮系统（继承之前的）
+   ======================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  height: 40px;
+  padding: 0 var(--space-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: all var(--duration-base) var(--ease-smooth);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 主要按钮 */
+.btn.primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: var(--primary-ink);
+  border-color: transparent;
+  font-weight: 600;
+  box-shadow: var(--shadow-md), 0 0 0 0 rgba(255, 210, 0, 0.4);
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+  box-shadow: var(--shadow-lg), var(--glow-primary);
+  transform: translateY(-2px);
+}
+
+/* 次要按钮 */
+.btn.secondary {
+  background: var(--surface-weak);
+  border-color: var(--border);
+}
+
+.btn.secondary:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+/* 危险按钮 */
+.btn.danger {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.btn.danger:hover:not(:disabled) {
+  background: var(--danger-hover);
+  box-shadow: var(--shadow-lg), 0 0 16px rgba(239, 68, 68, 0.3);
+}
+
+/* 幽灵按钮 */
+.btn.ghost {
+  background: transparent;
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.btn.ghost:hover:not(:disabled) {
+  background: var(--surface-weak);
+  border-color: var(--border-strong);
+}
+
+/* 图标按钮 */
+.btn.icon {
+  width: 40px;
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+/* ========================================
+   [Tag] 徽章系统
+   ======================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.badge.primary {
+  background: var(--primary);
+  color: var(--primary-ink);
+  border-color: transparent;
+}
+
+.badge.success {
+  background: var(--success);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.badge.danger {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* ========================================
+    Toast 通知样式
+   ======================================== */
+
+:where([data-sonner-toaster]) {
+  --width: 380px;
+  font-family: inherit;
+}
+
+:where([data-sonner-toast]) {
+  font-size: 14px;
+  line-height: 1.5;
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* 亮色主题 Toast */
+:root[data-theme='light'] :where([data-sonner-toast]) {
+  background: var(--glass-bg) !important;
+  box-shadow: var(--shadow-xl) !important;
+}
+
+:root[data-theme='dark'] :where([data-sonner-toast]) {
+  background: var(--glass-bg) !important;
+  box-shadow: var(--shadow-2xl) !important;
+}
+
+/* Toast 类型样式 */
+:where([data-sonner-toast][data-type='success']) {
+  border-color: var(--success) !important;
+}
+
+:where([data-sonner-toast][data-type='error']) {
+  border-color: var(--danger) !important;
+}
+
+:where([data-sonner-toast][data-type='warning']) {
+  border-color: var(--warning) !important;
+}
+
+:where([data-sonner-toast][data-type='info']) {
+  border-color: var(--info) !important;
+}
+
+/* ========================================
+    工具类
+   ======================================== */
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/*  响应式适配 */
+@media (max-width: 768px) {
+  :where([data-sonner-toaster]) {
+    --width: calc(100vw - 32px);
+  }
+
+  .btn {
+    height: 36px;
+    padding: 0 var(--space-md);
+    font-size: 13px;
+  }
+
+  .btn.icon {
+    width: 36px;
+  }
+}
+
+/* ========================================
+    背景可见度调节器
+   ======================================== */
+
+.bg-overlay-light {
+  --bg-overlay: rgba(250, 250, 250, 0.2) !important;
+}
+
+.bg-overlay-medium {
+  --bg-overlay: rgba(250, 250, 250, 0.35) !important;
+}
+
+.bg-overlay-heavy {
+  --bg-overlay: rgba(250, 250, 250, 0.5) !important;
+}
+
+/* 暗色主题 */
+:root[data-theme='dark'] .bg-overlay-light {
+  --bg-overlay: rgba(10, 10, 11, 0.25) !important;
+}
+
+:root[data-theme='dark'] .bg-overlay-medium {
+  --bg-overlay: rgba(10, 10, 11, 0.4) !important;
+}
+
+:root[data-theme='dark'] .bg-overlay-heavy {
+  --bg-overlay: rgba(10, 10, 11, 0.55) !important;
+}

@@ -1,0 +1,479 @@
+/* ========================================
+    ProfilePanel 核心样式
+   ======================================== */
+
+/* Wrapper：让折叠形态贴底 */
+.profileWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* ========================================
+    头像组件
+   ======================================== */
+@mixin avatar-base {
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-ink);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md), var(--glow-primary);
+}
+
+.avatarCompact,
+.avatarLarge {
+  @include avatar-base;
+}
+
+.avatarCompact {
+  width: 56px;
+  height: 56px;
+  cursor: pointer;
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.avatarLarge {
+  position: relative;
+  width: 56px;
+  height: 56px;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  &:hover {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+  }
+}
+
+/* 在线状态点 */
+.statusDot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--success);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ========================================
+   [Package] 紧凑模式（Compact）
+   ======================================== */
+.profileCompact {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  min-height: 88px;
+  height: 88px;
+  width: 100%;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+
+  &:hover {
+    border-color: var(--primary);
+
+    .avatarCompact {
+      transform: scale(1.05);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.compactInfo {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  column-gap: 12px;
+  min-width: 0;
+}
+
+.compactId {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compactEmail {
+  font-size: 12px;
+  color: var(--fg);
+  opacity: 0.6;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========================================
+   [Stats] 展开模式（Expanded）
+   ======================================== */
+.profilePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.userCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--surface), var(--surface-weak));
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, var(--surface-weak), var(--surface));
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.userInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.userName {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userEmail {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.6;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 统计信息 */
+.userStats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg);
+  opacity: 0.7;
+}
+
+.statDivider {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
+  opacity: 0.5;
+}
+
+/* 折叠按钮 */
+.collapseBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-weak);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+  color: var(--fg);
+
+  &:hover {
+    opacity: 1;
+    background: var(--surface);
+    transform: scale(1.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+/* 快捷操作网格 */
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.actionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-weak);
+  color: var(--fg);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-smooth);
+
+  &:hover {
+    background: var(--surface);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+/* ========================================
+    悬浮菜单
+   ======================================== */
+.hoverMenu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  min-width: 180px;
+  padding: 8px;
+  border-radius: 16px;
+  background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    var(--glass-bg);
+  backdrop-filter: var(--glass-blur) var(--glass-sat);
+  -webkit-backdrop-filter: var(--glass-blur) var(--glass-sat);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xl);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.95);
+  transition: all 0.2s var(--ease-smooth);
+  pointer-events: none;
+  z-index: var(--z-dropdown);
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  /* 小三角 */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 24px;
+    width: 12px;
+    height: 12px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    transform: rotate(45deg);
+    border-right: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }
+}
+
+.hoverMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--surface-weak);
+    transform: translateX(2px);
+  }
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  span {
+    flex: 1;
+    text-align: left;
+  }
+
+  &:hover svg {
+    opacity: 1;
+  }
+
+  &:not(:last-child) {
+    margin-bottom: 2px;
+  }
+
+  /* 退出按钮特殊样式 */
+  &:last-child {
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+
+    &:hover {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+
+      svg {
+        color: var(--danger);
+        opacity: 1;
+      }
+    }
+  }
+}
+
+/* ========================================
+    响应式
+   ======================================== */
+@media (max-width: 768px) {
+  .profilePanel {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .profileCompact {
+    padding: 12px 16px;
+  }
+
+  .compactId {
+    font-size: 13px;
+  }
+
+  .compactEmail {
+    font-size: 11px;
+  }
+
+  .actionGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .actionBtn {
+    padding: 12px 8px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .avatarCompact {
+    width: 48px;
+    height: 48px;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .compactId {
+    font-size: 12px;
+  }
+
+  .compactEmail {
+    font-size: 10px;
+  }
+
+  .userName {
+    font-size: 14px;
+  }
+
+  .userEmail {
+    font-size: 11px;
+  }
+}
+
+/* 小屏幕下菜单位置调整 */
+@media (max-height: 600px) {
+  .hoverMenu {
+    bottom: auto;
+    top: calc(100% + 8px);
+
+    &::after {
+      bottom: auto;
+      top: -6px;
+      transform: rotate(225deg);
+    }
+  }
+}

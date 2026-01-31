@@ -1,0 +1,630 @@
+/* popup.css (v2 优化版) */
+
+/* --- 全局和主题变量 --- */
+:root {
+  /* [!!] 优化: 增加了更多的颜色和基础布局变量 */
+
+  /* 基础颜色 */
+  --color-yellow-400: #fcd34d;
+  --color-yellow-500: #f59e0b;
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* 红色 (Error) */
+  --color-red-100: #fef2f2;
+  --color-red-400: #fca5a5;
+  --color-red-600: #dc2626;
+  --color-red-900: #7f1d1d; /* For dark error border */
+  --color-red-bg-dark: #3f1212;
+
+  /* 绿色 (Success) */
+  --color-green-100: #f0fdf4;
+  --color-green-500: #86efac;
+  --color-green-600: #16a34a;
+  --color-green-900: #14532d; /* For dark error border */
+  --color-green-bg-dark: #14361e;
+
+  /* 蓝色 (Info) */
+  --color-blue-100: #eff6ff;
+  --color-blue-500: #93c5fd;
+  --color-blue-600: #2563eb;
+  --color-blue-900: #1e3a8a; /* For dark error border */
+  --color-blue-bg-dark: #1e2b4d;
+
+  /* 警告色 (Warning - Yellow based) */
+  --color-warning-50: #fefce8;
+  --color-warning-200: #fde68a;
+  --color-warning-600: #ca8a04;
+  --color-warning-800: #713f12;
+  --color-warning-bg-dark: rgba(74, 55, 4, 0.3);
+
+  /* 布局 */
+  --layout-width: 350px;
+  --border-radius-small: 6px;
+  --border-radius-medium: 8px;
+  --border-radius-large: 12px;
+  --border-radius-full: 9999px;
+
+  /* 过渡 */
+  --transition-fast: 200ms ease-out;
+  --transition-medium: 300ms ease-out;
+
+  --bg-primary: var(--color-white);
+  --bg-secondary: #fafafa; /* neutral-50 */
+  --bg-tertiary: #f5f5f5; /* neutral-100 */
+  --bg-tertiary-hover: #e5e5e5; /* neutral-200 */
+  --bg-input: var(--color-white);
+
+  --text-primary: #171717; /* neutral-900 */
+  --text-secondary: #525252; /* neutral-600 */
+  --border-primary: #e5e5e5; /* neutral-200 */
+  --border-secondary: #d4d4d4; /* neutral-300 */
+
+  --shadow-focus: 0 0 0 4px rgba(245, 158, 11, 0.2);
+  --shadow-btn-hover: 0 4px 10px rgba(0, 0, 0, 0.05);
+  --shadow-btn-primary-hover: 0 6px 15px rgba(245, 158, 11, 0.2);
+}
+
+/* --- 暗黑模式 --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #171717; /* neutral-900 */
+    --bg-secondary: #262626; /* neutral-800 */
+    --bg-tertiary: #404040; /* neutral-700 */
+    --bg-tertiary-hover: #525252; /* neutral-600 */
+    --bg-input: #262626; /* neutral-800 */
+
+    --text-primary: #f5f5f5; /* neutral-100 */
+    --text-secondary: #a3a3a3; /* neutral-400 */
+    --border-primary: #404040; /* neutral-700 */
+    --border-secondary: #525252; /* neutral-600 */
+  }
+}
+
+/* --- 基础设置 --- */
+body {
+  width: var(--layout-width);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* --- 视图容器 --- */
+#app-container {
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.view,
+.tab-content {
+  display: none;
+  width: 100%;
+  animation: fadeInView 0.5s var(--transition-medium) both;
+}
+
+#app-container[data-view="login"] #login-view,
+#app-container[data-view="userkey"] #userkey-view,
+#app-container[data-view="main"] #main-view,
+.tab-content.active {
+  display: block; /* 使用 block 或 flex 取决于 .view 的需求 */
+}
+
+#login-view,
+#userkey-view,
+#main-view {
+  display: none; /* 覆盖上面的 .active 规则 */
+  flex-direction: column;
+  align-items: center;
+}
+
+#app-container[data-view="login"] #login-view,
+#app-container[data-view="userkey"] #userkey-view,
+#app-container[data-view="main"] #main-view {
+  display: flex; /* 最终显示为 flex */
+}
+
+.tab-content.active {
+  display: block; /* 标签页内容显示为 block */
+}
+
+/* --- 卡片 (用于包裹主要内容) --- */
+
+.card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* [!!] 新增: 卡片顶部的图标 */
+.card-icon {
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.card h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+.card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+.card .link-section {
+  margin-top: 16px;
+  text-align: center;
+}
+/* 链接按钮 (例如 "返回") */
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+.btn-link:hover {
+  color: var(--text-primary);
+}
+
+/* --- 表单和输入框 --- */
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* [!!] 优化: 使用 gap 替代 .form-group 的 margin */
+}
+
+.form-group {
+  width: 100%;
+}
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border-radius: var(--border-radius-medium);
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-yellow-500);
+  box-shadow: var(--shadow-focus);
+}
+@media (prefers-color-scheme: dark) {
+  .input:focus {
+    background-color: #3f3f3f; /* [!!] 保持这个特定的 focus 行为 */
+  }
+}
+
+/* --- 按钮 --- */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--border-radius-medium);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color var(--transition-fast),
+    opacity var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  will-change: transform;
+}
+.btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-btn-hover);
+}
+.btn:not(:disabled):active {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: none;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 主按钮 (黄色) */
+.btn-primary {
+  background-color: var(--color-yellow-400);
+  color: var(--color-black);
+}
+.btn-primary:not(:disabled):hover {
+  background-color: var(--color-yellow-500);
+  box-shadow: var(--shadow-btn-primary-hover);
+}
+
+/* 次要按钮 (灰色) */
+.btn-secondary {
+  background-color: var(--bg-tertiary-hover); /* [!!] 优化: 使用变量 */
+  color: var(--text-primary); /* [!!] 优化: 使用变量 */
+}
+.btn-secondary:not(:disabled):hover {
+  background-color: var(--border-secondary); /* [!!] 优化: 使用变量 */
+}
+@media (prefers-color-scheme: dark) {
+  .btn-secondary {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+  .btn-secondary:not(:disabled):hover {
+    background-color: var(--bg-tertiary-hover);
+  }
+}
+
+/* --- 主界面 Header --- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  gap: 12px; /* [!!] 优化: 增加元素间距 */
+}
+
+/* 登出按钮 (在 header 中) */
+#logout-btn {
+  width: auto; /* [!!] 优化: 覆盖 .btn 的 100% 宽度 */
+  padding: 8px 12px; /* [!!] 优化: 调整为更小的按钮 */
+  flex-shrink: 0; /* [!!] 优化: 防止按钮被压缩 */
+}
+
+/* --- 许可证信息 (Header 中) --- */
+#license-info {
+  /* [!!] 优化: 样式与 .license-info-card 中的 .info-row 类似 */
+  display: flex; /* 默认是 none, 由 JS 控制 */
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-grow: 1; /* [!!] 优化: 占据剩余空间 */
+  overflow: hidden; /* [!!] 优化: 防止内容溢出 */
+}
+#license-info .license-status {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+#license-info .license-expiry {
+  white-space: nowrap;
+}
+
+/* --- 许可证信息卡片 (UserKey 视图) --- */
+.license-info-card {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-secondary); /* [!!] 优化: 使用变量 */
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-medium);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex; /* [!!] 优化: 使用 flex 布局 */
+  flex-direction: column;
+  gap: 8px; /* [!!] 优化: 使用 gap 替代 .info-row margin */
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+}
+.info-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* --- 文件上传区域 --- */
+.dropzone {
+  width: 100%;
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--border-radius-medium);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: var(--bg-secondary);
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  transition: border-color var(--transition-medium),
+    border-style var(--transition-medium),
+    background-color var(--transition-medium);
+}
+.dropzone.dragover {
+  border-style: solid;
+  border-color: var(--color-yellow-500);
+  background-color: var(--color-warning-50);
+}
+.dropzone-icon {
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  transition: transform var(--transition-medium), color var(--transition-medium);
+}
+.dropzone.dragover .dropzone-icon {
+  transform: translateY(-5px) scale(1.1);
+  color: var(--color-yellow-500);
+}
+.dropzone p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 12px 0;
+}
+.dropzone #file-select-btn {
+  width: auto;
+  padding: 8px 16px;
+}
+@media (prefers-color-scheme: dark) {
+  .dropzone.dragover {
+    background-color: var(--color-warning-bg-dark);
+  }
+}
+
+/* --- 消息和加载器 --- */
+.error-message,
+.status-message,
+.warning {
+  /* [!!] 优化: 将 .warning 合并到基础样式 */
+  font-size: 13px;
+  padding: 10px 12px; /* [!!] 优化: 统一 padding */
+  border-radius: var(--border-radius-small);
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px; /* [!!] 优化: 统一的外边距 (之前 .error-message 是 margin-top) */
+  animation: fadeInMessage 0.5s ease-out;
+}
+/* [!!] 优化: error-message 默认 display: none, JS 控制显示 */
+.error-message {
+  display: none;
+}
+
+/* [!!] 优化: 使用变量定义消息框样式 */
+.error-message {
+  background-color: var(--color-red-100);
+  color: var(--color-red-600);
+  border: 1px solid var(--color-red-400);
+}
+.status-message.success {
+  background-color: var(--color-green-100);
+  color: var(--color-green-600);
+  border: 1px solid var(--color-green-500);
+}
+.status-message.info {
+  background-color: var(--color-blue-100);
+  color: var(--color-blue-600);
+  border: 1px solid var(--color-blue-500);
+}
+/* .warning 样式 (例如 #unsw-pageWarning) */
+.warning {
+  background-color: var(--color-warning-50);
+  border: 1px solid var(--color-warning-200);
+  color: var(--color-warning-600);
+}
+
+@media (prefers-color-scheme: dark) {
+  .error-message {
+    background-color: var(--color-red-bg-dark);
+    color: var(--color-red-400);
+    border-color: var(--color-red-900);
+  }
+  .status-message.success {
+    background-color: var(--color-green-bg-dark);
+    color: var(--color-green-500);
+    border-color: var(--color-green-900);
+  }
+  .status-message.info {
+    background-color: var(--color-blue-bg-dark);
+    color: var(--color-blue-500);
+    border-color: var(--color-blue-900);
+  }
+  .warning {
+    background-color: var(--color-warning-bg-dark);
+    border-color: var(--color-warning-800);
+    color: var(--color-yellow-400); /* [!!] 优化: 使用亮黄色 */
+  }
+}
+
+/* --- 加载器 Spinner --- */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: var(--color-white);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.btn-primary .spinner {
+  border-color: rgba(0, 0, 0, 0.3);
+  border-top-color: var(--color-black);
+}
+/* [!!] 优化: .license-info 中的 spinner */
+#license-info .license-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--text-secondary);
+}
+@media (prefers-color-scheme: dark) {
+  #license-info .license-spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: var(--text-secondary);
+  }
+}
+
+/* --- 标签页导航 --- */
+.tab-nav {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid var(--border-primary);
+  margin: -12px 0 16px 0; /* 贴近 header */
+}
+.tab-btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  flex-grow: 1;
+  text-align: center;
+}
+.tab-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+.tab-btn.active {
+  color: var(--color-yellow-500);
+  border-bottom-color: var(--color-yellow-500);
+}
+@media (prefers-color-scheme: dark) {
+  .tab-btn.active {
+    color: var(--color-yellow-400);
+    border-bottom-color: var(--color-yellow-400);
+  }
+}
+
+/* --- (插件 B) UNSW 课程列表 --- */
+.course-list {
+  width: 100%;
+  margin-top: 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-medium);
+  padding: 8px;
+  min-height: 50px;
+  max-height: 140px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.course-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.course-item:last-child {
+  border-bottom: none;
+}
+
+/* (插件 B) 列表删除按钮 */
+.course-item button {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 6px;
+  background-color: var(--color-red-100);
+  color: var(--color-red-600);
+  border: 1px solid var(--color-red-400);
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.course-item button:hover {
+  background-color: #fee2e2; /* [!!] 硬编码, 暂无变量 */
+  color: #b91c1c; /* [!!] 硬编码, 暂无变量 */
+}
+@media (prefers-color-scheme: dark) {
+  .course-item button {
+    background-color: var(--color-red-bg-dark);
+    color: var(--color-red-400);
+    border-color: var(--color-red-900);
+  }
+  .course-item button:hover {
+    background-color: var(--color-red-900);
+    color: var(--color-red-100);
+  }
+}
+
+/* --- (旧样式) 解密内容显示区域 --- */
+.decrypted-output {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-medium);
+  background-color: var(--bg-secondary);
+  box-sizing: border-box;
+  animation: fadeInMessage 0.5s ease-out;
+}
+.decrypted-output h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.decrypted-output pre {
+  margin: 0;
+  padding: 10px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-small);
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* --- 动画关键帧 --- */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fadeInView {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeInMessage {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

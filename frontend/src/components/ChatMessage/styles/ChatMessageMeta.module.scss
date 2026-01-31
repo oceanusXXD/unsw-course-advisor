@@ -1,0 +1,116 @@
+// src/components/ChatMessage/ChatMessageMeta.module.scss
+
+/* ========== 用户消息 Meta ========== */
+.userMeta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-right: 4px;
+}
+
+.userTime {
+  font-size: 11px;
+  opacity: 0.5;
+  color: var(--fg);
+}
+
+/* ========== 助手消息 Meta ========== */
+.assistantMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px; //  所有元素之间的间距
+  margin-top: 8px;
+  max-width: 80ch;
+}
+
+/*  按钮容器 */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*  时间标签 */
+.assistantTime {
+  font-size: 11px;
+  opacity: 0.5;
+  color: var(--fg);
+}
+
+/* ========== Meta 按钮 ========== */
+.metaBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary, var(--fg));
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-size: 12px;
+  background: var(--surface-weak);
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+    background: var(--surface-weak);
+    border-color: var(--border);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary, var(--fg));
+    opacity: 1;
+    border-color: var(--primary, var(--border));
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.btnLabel {
+  font-size: 12px;
+  white-space: nowrap;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+  .assistantMeta {
+    gap: 6px;
+    max-width: 100%;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .metaBtn {
+    padding: 3px 6px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .assistantMeta {
+    gap: 4px;
+  }
+
+  .actions {
+    gap: 4px;
+  }
+}

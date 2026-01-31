@@ -1,0 +1,207 @@
+/* ========================================
+    Design Tokens - 设计系统核心变量
+   ======================================== */
+
+/*  公共变量（主题无关） */
+:root {
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-base: 0.2s;
+
+  --chat-max-width: 880px;
+  --sidebar-width: 280px;
+  --header-height: 64px;
+}
+
+/* ========================================
+    亮色主题（[Warmup] 增强版）
+   ======================================== */
+:root[data-theme='light'] {
+  /* 基础色彩 */
+  --bg: #fafafa;
+  --bg-elev: #ffffff;
+  --fg: #1a1a1a;
+  --fg-muted: #6b7280;
+
+  /* 品牌色 */
+  --primary: #bd711b;
+  --primary-hover: #c27e63;
+  --primary-active: #d4af06;
+  --primary-ink: #1a1a1a;
+
+  /* 功能色 */
+  --danger: #9b2222;
+  --danger-hover: #a72b2b;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+
+  /* [Warmup] 液态玻璃系统 - 增强渐变与透明度 */
+  --glass-bg: rgba(255, 255, 255, 0.25);
+  --glass-bg-strong: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-border-strong: rgba(255, 255, 255, 0.3);
+  --glass-blur: blur(10px);
+  --glass-sat: saturate(180%);
+
+  /* [Warmup] 彩色渐变玻璃（类似 macOS） */
+  --glass-gradient-1: linear-gradient(
+    135deg,
+    rgba(167, 139, 250, 0.15) 0%,
+    rgba(139, 92, 246, 0.08) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  --glass-gradient-2: linear-gradient(
+    135deg,
+    rgba(251, 146, 60, 0.12) 0%,
+    rgba(245, 158, 11, 0.06) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  --glass-gradient-3: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.12) 0%,
+    rgba(37, 99, 235, 0.06) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+
+  /* 表面 */
+  --surface: rgba(255, 255, 255, 0.4);
+  --surface-weak: rgba(255, 255, 255, 0.25);
+  --surface-strong: rgba(255, 255, 255, 0.6);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.12);
+
+  /* 阴影系统 */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 0 rgba(255, 255, 255, 0.6) inset;
+
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15), 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.18), 0 12px 48px rgba(0, 0, 0, 0.12);
+
+  /* [Warmup] 彩色发光效果 */
+  --glow-purple: 0 0 24px rgba(167, 139, 250, 0.4);
+  --glow-blue: 0 0 24px rgba(59, 130, 246, 0.4);
+  --glow-orange: 0 0 24px rgba(251, 146, 60, 0.4);
+  --glow-primary: 0 0 24px rgba(255, 210, 0, 0.5);
+
+  /* 焦点/交互 */
+  --focus-ring: 0 0 0 4px rgba(255, 210, 0, 0.25);
+
+  /*  背景渐变 - 微妙色彩层 */
+  --brand-gradient: radial-gradient(circle at 15% 10%, rgba(167, 139, 250, 0.08), transparent 50%),
+    radial-gradient(circle at 85% 90%, rgba(251, 146, 60, 0.06), transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.04), transparent 60%);
+
+  /* [Warmup] 背景图片叠加 - 进一步降低 */
+  --bg-overlay: rgba(250, 250, 250, 0.25);
+  --bg-blur: blur(0px);
+  --bg-image: url('./background2.jpg');
+}
+
+/* ========================================
+    暗色主题
+   ======================================== */
+:root[data-theme='dark'] {
+  /* 基础色彩 */
+  --bg: #0a0a0b;
+  --bg-elev: #12121a;
+  --fg: #f0f0f0;
+  --fg-muted: #9ca3af;
+
+  /* 品牌色 */
+  --primary: #ffd200;
+  --primary-hover: #ffe066;
+  --primary-active: #e6bd00;
+  --primary-ink: #1a1a1a;
+
+  /* 功能色 */
+  --danger: #ef4444;
+  --danger-hover: #f87171;
+  --success: #22c55e;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+
+  /* 液态玻璃系统 */
+  --glass-bg: rgba(18, 18, 26, 0.7);
+  --glass-bg-strong: rgba(18, 18, 26, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-strong: rgba(255, 255, 255, 0.18);
+  --glass-blur: blur(24px);
+  --glass-sat: saturate(180%);
+
+  /* 彩色渐变玻璃 */
+  --glass-gradient-1: linear-gradient(
+    135deg,
+    rgba(167, 139, 250, 0.12) 0%,
+    rgba(139, 92, 246, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  --glass-gradient-2: linear-gradient(
+    135deg,
+    rgba(251, 146, 60, 0.1) 0%,
+    rgba(245, 158, 11, 0.05) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  --glass-gradient-3: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1) 0%,
+    rgba(37, 99, 235, 0.05) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+
+  /* 表面 */
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-weak: rgba(255, 255, 255, 0.05);
+  --surface-strong: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  /* 阴影系统 */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(255, 255, 255, 0.1) inset;
+
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.7), 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.8), 0 12px 48px rgba(0, 0, 0, 0.6);
+
+  /* 彩色发光效果 */
+  --glow-purple: 0 0 28px rgba(167, 139, 250, 0.5);
+  --glow-blue: 0 0 28px rgba(59, 130, 246, 0.5);
+  --glow-orange: 0 0 28px rgba(251, 146, 60, 0.5);
+  --glow-primary: 0 0 28px rgba(255, 210, 0, 0.6);
+
+  /* 焦点/交互 */
+  --focus-ring: 0 0 0 4px rgba(255, 210, 0, 0.2);
+
+  /*  背景渐变 */
+  --brand-gradient: radial-gradient(circle at 15% 10%, rgba(167, 139, 250, 0.06), transparent 50%),
+    radial-gradient(circle at 85% 90%, rgba(251, 146, 60, 0.04), transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.03), transparent 60%);
+
+  /* 背景图片叠加 */
+  --bg-overlay: rgba(10, 10, 11, 0.5);
+  --bg-blur: blur(0px);
+  --bg-image: url('./background.jpg');
+}
+body {
+  background: var(--bg-placeholder);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background 0.5s ease-in-out;
+}

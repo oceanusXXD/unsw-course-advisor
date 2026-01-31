@@ -1,0 +1,889 @@
+{
+    "version": "1.0",
+    "apis": [
+        {
+            "base_url": "accounts",
+            "description": "本文件描述 `accounts` 应用下的所有公开/认证 API 接口（含许可证、社交登录、用户管理等）。所有日期时间格式为 ISO 8601（例如：\"2025-11-08T12:34:56Z\"）。",
+            "endpoints": [
+                {
+                    "path": "/register/",
+                    "method": "POST",
+                    "auth": "AllowAny",
+                    "summary": "用户注册",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "email": "string, required",
+                            "password": "string, required",
+                            "password2": "string, optional (若未传则使用 password)",
+                            "username": "string, optional"
+                        }
+                    },
+                    "responses": {
+                        "201": {
+                            "description": "注册成功并返回 tokens 与用户信息",
+                            "example": {
+                                "message": "注册成功",
+                                "user": {
+                                    "id": 123,
+                                    "email": "alice@example.com",
+                                    "username": "alice"
+                                },
+                                "tokens": {
+                                    "access": "eyJ...",
+                                    "refresh": "eyJ..."
+                                },
+                                "access": "eyJ...",
+                                "refresh": "eyJ..."
+                            }
+                        },
+                        "400": {
+                            "description": "参数校验失败或注册过程中发生错误",
+                            "example": {
+                                "error": "邮箱格式不正确"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/login/",
+                    "method": "POST",
+                    "auth": "AllowAny",
+                    "summary": "用户登录（返回 JWT）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "email": "string, required",
+                            "password": "string, required"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "登录成功，返回 access/refresh 与用户信息",
+                            "example": {
+                                "access": "eyJ...",
+                                "refresh": "eyJ...",
+                                "user": {
+                                    "id": 123,
+                                    "email": "alice@example.com",
+                                    "username": "alice"
+                                },
+                                "tokens": {
+                                    "access": "eyJ...",
+                                    "refresh": "eyJ..."
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "验证失败",
+                            "example": {
+                                "error": "邮箱或密码不正确"
+                            }
+                        },
+                        "401": {
+                            "description": "认证失败",
+                            "example": {
+                                "error": "登录失败"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/logout/",
+                    "method": "POST",
+                    "auth": "IsAuthenticated",
+                    "summary": "登出（使 refresh token 失效/加入黑名单）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "refresh": "string, required (refresh token)"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "登出成功",
+                            "example": {
+                                "detail": "登出成功，token 已失效"
+                            }
+                        },
+                        "400": {
+                            "description": "参数缺失或无效",
+                            "example": {
+                                "error": "需要提供 refresh token"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/me/",
+                    "method": "GET",
+                    "auth": "IsAuthenticated",
+                    "summary": "获取当前认证用户信息",
+                    "request": null,
+                    "responses": {
+                        "200": {
+                            "description": "当前用户信息",
+                            "example": {
+                                "user": {
+                                    "id": 123,
+                                    "email": "alice@example.com",
+                                    "username": "alice"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/change-password/",
+                    "method": "POST",
+                    "auth": "IsAuthenticated",
+                    "summary": "修改当前用户密码",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "old_password": "string, required",
+                            "password": "string, required",
+                            "password2": "string, required"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "密码修改成功",
+                            "example": {
+                                "detail": "密码修改成功"
+                            }
+                        },
+                        "400": {
+                            "description": "参数或校验错误",
+                            "example": {
+                                "error": "旧密码错误"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/delete/",
+                    "method": "DELETE",
+                    "auth": "IsAuthenticated",
+                    "summary": "删除当前用户（注销并删除账号）",
+                    "request": null,
+                    "responses": {
+                        "200": {
+                            "description": "账号删除成功",
+                            "example": {
+                                "message": "账号已成功删除"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/google/",
+                    "method": "POST",
+                    "auth": "AllowAny",
+                    "summary": "Google 社交登录（支持前端传 code 或直接交换后的 access_token）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "code": "string, optional (授权码，后端会与 Google 交换 access_token)",
+                            "access_token": "string, optional (若前端已交换，可直接传 access_token)"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "登录成功，返回统一结构（已归一化）",
+                            "example": {
+                                "access": "eyJ...",
+                                "refresh": "eyJ...",
+                                "user": {
+                                    "id": 123,
+                                    "email": "alice@example.com",
+                                    "username": "alice"
+                                },
+                                "tokens": {
+                                    "access": "eyJ...",
+                                    "refresh": "eyJ..."
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "网络或交换错误",
+                            "example": {
+                                "error": "Google exchange failed"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/github/",
+                    "method": "POST",
+                    "auth": "AllowAny",
+                    "summary": "GitHub 社交登录（兼容 code 或 access_token）；包含多账户合并的兼容兜底逻辑",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "code": "string, optional",
+                            "access_token": "string, optional"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "登录或兜底成功，返回 tokens 与用户信息",
+                            "example": {
+                                "access": "eyJ...",
+                                "refresh": "eyJ...",
+                                "user": {
+                                    "id": 456,
+                                    "email": "bob@example.com",
+                                    "username": "bob"
+                                },
+                                "tokens": {
+                                    "access": "eyJ...",
+                                    "refresh": "eyJ..."
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "多账户冲突或其它失败（可能返回友好提示）",
+                            "example": {
+                                "error": "Multiple user accounts found for this email. Please contact support."
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/outlook/",
+                    "method": "POST",
+                    "auth": "AllowAny",
+                    "summary": "Microsoft/Outlook 社交登录（支持 code 交换）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "code": "string, optional",
+                            "access_token": "string, optional"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "登录成功，返回标准化的 tokens 结构",
+                            "example": {
+                                "access": "eyJ...",
+                                "refresh": "eyJ...",
+                                "user": {
+                                    "id": 789,
+                                    "email": "cathy@example.com",
+                                    "username": "cathy"
+                                },
+                                "tokens": {
+                                    "access": "eyJ...",
+                                    "refresh": "eyJ..."
+                                }
+                            }
+                        },
+                        "500": {
+                            "description": "服务器端配置或网络错误",
+                            "example": {
+                                "error": "Server configuration error: Outlook credentials missing."
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/token/refresh/",
+                    "method": "POST",
+                    "auth": "AllowAny",
+                    "summary": "刷新 access token（SimpleJWT 的 TokenRefreshView）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "refresh": "string, required"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "刷新成功",
+                            "example": {
+                                "access": "eyJ...",
+                                "refresh": "eyJ..."
+                            }
+                        },
+                        "401": {
+                            "description": "refresh 无效或已过期",
+                            "example": {
+                                "detail": "Token is invalid or expired"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/license/activate/",
+                    "method": "POST",
+                    "auth": "IsAuthenticated",
+                    "summary": "为当前认证用户激活许可证（并生成 license_key / user_key / device_id 等）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "device_id": "string, required",
+                            "expires_in_days": "integer, optional, default 31"
+                        }
+                    },
+                    "responses": {
+                        "201": {
+                            "description": "许可证激活成功（请安全保存返回的 user_key）",
+                            "example": {
+                                "message": "许可证已成功激活（请妥善保存 user_key）",
+                                "license_key": "LIC-0123456789ABCDEF",
+                                "user_key": "BASE64_ENCODED_USER_KEY",
+                                "device_id": "DEVICE-UUID-OR-ID",
+                                "license_active": true,
+                                "license_expires_at": "2025-12-09T12:34:56Z"
+                            }
+                        },
+                        "409": {
+                            "description": "已激活",
+                            "example": {
+                                "error": "许可证已经激活"
+                            }
+                        },
+                        "500": {
+                            "description": "服务器内部错误",
+                            "example": {
+                                "error": "生成许可证失败，请重试"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/license/validate/",
+                    "method": "POST",
+                    "auth": "AllowAny",
+                    "summary": "校验某个 license_key 是否有效（公开接口）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "license_key": "string, required"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "许可证有效",
+                            "example": {
+                                "valid": true,
+                                "reason": "有效",
+                                "owner_user_id": 123,
+                                "owner_email": "alice@example.com",
+                                "license_activated_at": "2025-01-01T00:00:00Z",
+                                "license_expires_at": "2025-12-31T23:59:59Z",
+                                "days_until_expiry": 53
+                            }
+                        },
+                        "403": {
+                            "description": "许可证无效（例如：被吊销、未激活或格式错误）",
+                            "example": {
+                                "valid": false,
+                                "error": "许可证无效或已被取消"
+                            }
+                        },
+                        "404": {
+                            "description": "不存在的 license_key",
+                            "example": {
+                                "valid": false,
+                                "error": "许可证不存在"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/license/file-key/",
+                    "method": "POST",
+                    "auth": "AllowAny (需提供有效 license_key)",
+                    "summary": "根据 file_id 返回为当前 license/user 封装后的文件解密密钥（wrapped_file_key）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "license_key": "string, required",
+                            "file_id": "string, required"
+                        }
+                    },
+                    "notes": "虽然 permission_classes 是 AllowAny，但请求必须携带有效的 license_key；后端会验证该 license 的有效性并使用其 user_key 对文件密钥进行重新加密返回。",
+                    "responses": {
+                        "200": {
+                            "description": "返回为用户封装后的文件密钥",
+                            "example": {
+                                "message": "文件解密密钥已成功封装",
+                                "wrapped_file_key": "BASE64_OR_JSON_WRAPPED_KEY"
+                            }
+                        },
+                        "403": {
+                            "description": "许可证无效或已过期",
+                            "example": {
+                                "error": "许可证无效: 已过期"
+                            }
+                        },
+                        "404": {
+                            "description": "file_id 未找到",
+                            "example": {
+                                "error": "文件ID无效或未找到对应密钥"
+                            }
+                        },
+                        "500": {
+                            "description": "加密/解密内部错误",
+                            "example": {
+                                "error": "处理密钥时发生内部错误"
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/license/my/",
+                    "method": "GET",
+                    "auth": "IsAuthenticated",
+                    "summary": "获取当前认证用户的许可证信息（我的许可证）",
+                    "request": null,
+                    "responses": {
+                        "200": {
+                            "description": "当前用户的许可证信息",
+                            "example": {
+                                "license_key": "LIC-0123456789ABCDEF",
+                                "device_id": "DEVICE-UUID",
+                                "license_active": true,
+                                "license_activated_at": "2025-01-01T00:00:00Z",
+                                "license_expires_at": "2025-12-31T23:59:59Z",
+                                "is_valid": true,
+                                "days_until_expiry": 53
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/license/course-map/",
+                    "method": "GET",
+                    "auth": "AllowAny",
+                    "summary": "返回课程映射表（静态 JSON 文件 course_map.json 的内容）",
+                    "notes": "后端使用 Django staticfiles finders 查找 course_map.json，适合部署时将文件放在任一 static 目录或 STATICFILES_DIRS 中。",
+                    "request": null,
+                    "responses": {
+                        "200": {
+                            "description": "课程映射 JSON 内容，结构由 course_map.json 决定",
+                            "example": {
+                                "courses": [
+                                    {
+                                        "code": "CS101",
+                                        "name": "计算机导论",
+                                        "uoc": 6
+                                    }
+                                ]
+                            }
+                        },
+                        "404": {
+                            "description": "文件未找到",
+                            "example": {
+                                "error": "服务器内部错误：无法定位资源文件 'course_map.json'"
+                            }
+                        },
+                        "500": {
+                            "description": "读取/解析失败",
+                            "example": {
+                                "error": "读取资源文件时发生错误",
+                                "details": "解析错误信息..."
+                            }
+                        }
+                    }
+                }
+            ],
+            "common_errors": {
+                "400": "Bad Request — 参数或格式错误（校验失败）",
+                "401": "Unauthorized — 未认证或 access token 无效",
+                "403": "Forbidden — 权限或许可证问题（如许可证已过期/无效）",
+                "404": "Not Found — 资源不存在（例如 license_key、file_id 或 course_map.json）",
+                "409": "Conflict — 资源状态冲突（例如许可证已激活）",
+                "500": "Internal Server Error — 服务端异常（请检查日志）"
+            },
+            "notes": [
+                "社交登录端点会尝试统一响应结构为 { access, refresh, user, tokens }，以方便前端兼容。",
+                "token/refresh/ 为 SimpleJWT 的刷新接口，前端应保存 refresh 并在 access 即将过期时调用。",
+                "GetFileDecryptKeyView 的工作流程：服务器用主密钥解密数据库中的文件密钥 -> 使用目标用户的 user_key 将文件密钥重新加密并返回。",
+                "ActivateLicenseView 在写入时使用事务与行级锁保护，并对唯一约束冲突进行重试（最多 3 次）。",
+                "Course map 文件请放在任一 app 的 static 目录或 STATICFILES_DIRS 中，文件名为 course_map.json。"
+            ]
+        },
+        {
+            "base_url": "/chatbot",
+            "description": "聊天机器人相关接口（多轮对话 SSE 流、时间线查询、用户/学生档案）。注意：`/chat_multiround/` 的请求体字段 **必须使用 `query`**（不是 `user_input`）。文档中同时列出兼容字段（如 legacy `history`、camelCase/snake_case 映射）。",
+            "endpoints": [
+                {
+                    "path": "/chat_multiround/",
+                    "method": "POST",
+                    "summary": "多轮对话（流式 SSE 响应）",
+                    "notes": "后端实现期望请求体字段 `query`。前端可同时传 `frontend_state`（推荐）或兼容旧 `history` 格式。响应为 text/event-stream，多种事件类型（见 responses）。",
+                    "request": {
+                        "content_type": "application/json",
+                        "headers": {
+                            "Accept": "text/event-stream",
+                            "X-User-Id": "可选，优先于 body.user_id",
+                            "X-Tab-Id": "可选，优先于 body.tab_id"
+                        },
+                        "body_schema": {
+                            "query": {
+                                "type": "string",
+                                "required": true,
+                                "description": "本次用户输入的文本（必须）。后端代码直接使用 data.get('query') 并进行 strip 校验。"
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "required": false,
+                                "description": "可选：用户标识（若未提供，可通过 X-User-Id header 或 request.user 获取，默认 'anonymous'）。字段名兼容 userId / user_id。"
+                            },
+                            "tab_id": {
+                                "type": "string",
+                                "required": false,
+                                "description": "可选：会话 tab id。若不传，后端会生成一个格式如 tab_{hex}*{ts} 的 id。字段名兼容 tabId / tab_id。"
+                            },
+                            "frontend_state": {
+                                "type": "object",
+                                "required": false,
+                                "description": "推荐：完整前端状态对象，后端会从中读取初始状态；若不传则可使用 legacy history 字段。",
+                                "properties": {
+                                    "messages": {
+                                        "type": "array",
+                                        "description": "消息数组，元素格式 { role: 'user'|'assistant', content: '...' }。"
+                                    },
+                                    "pending_file_generation": {
+                                        "type": "object",
+                                        "description": "（可选）文件生成任务的简要状态（例如 {status, file_name, progress}）。"
+                                    },
+                                    "pending_plugin_install": {
+                                        "type": "object",
+                                        "description": "（可选）待安装插件信息（例如 {plugin_name, version, status}）。"
+                                    },
+                                    "last_proposal_ts": {
+                                        "type": "number",
+                                        "description": "（可选）上次 proposal 的时间戳（float / 秒或毫秒，后端使用 or 0.0 兜底）。"
+                                    },
+                                    "file_generation_declined": {
+                                        "type": "boolean",
+                                        "description": "（可选）用户是否拒绝文件生成。"
+                                    },
+                                    "memory": {
+                                        "type": "object",
+                                        "description": "（可选）长期记忆结构，若存在则后端直接使用；否则后端会根据 tab_id 加载 memory。"
+                                    },
+                                    "student_info": {
+                                        "type": "object",
+                                        "description": "（可选）学生/用户的结构化信息（用于 profile 场景）。"
+                                    }
+                                }
+                            },
+                            "history": {
+                                "type": "array",
+                                "required": false,
+                                "description": "兼容旧格式。若提供 frontend_state 则优先使用 frontend_state。history 元素建议格式：[{user: '...', bot: '...'}, ...]（后端会把它转换为 messages 数组）。"
+                            },
+                            "tools": {
+                                "type": "array",
+                                "required": false,
+                                "description": "可选：工具调用相关信息（前端可传）。"
+                            },
+                            "memory_context": {
+                                "type": "object",
+                                "required": false,
+                                "description": "可选：附加 memory 查询上下文。"
+                            },
+                            "knowledge_context": {
+                                "type": "object",
+                                "required": false,
+                                "description": "可选：知识图谱或外部知识查询上下文。"
+                            },
+                            "temperature": {
+                                "type": "number",
+                                "required": false,
+                                "description": "可选：推理温度参数（若后端/agent 支持则生效）。"
+                            }
+                        }
+                    },
+                    "responses": {
+                        "type": "text/event-stream",
+                        "events": [
+                            {
+                                "name": "session_init",
+                                "description": "会话初始化，返回 tab_id（可能是后端生成）与 turn_id（本次推理轮次的 id）",
+                                "data_example": {
+                                    "tab_id": "tab_abc123_1700000000000",
+                                    "turn_id": "turn_xyz_1700000000000"
+                                }
+                            },
+                            {
+                                "name": "partial_response",
+                                "description": "中间增量文本（模型流式输出）",
+                                "data_example": {
+                                    "content": "部分生成文本..."
+                                }
+                            },
+                            {
+                                "name": "tool_invocation",
+                                "description": "工具被调用的事件（含工具名与参数）",
+                                "data_example": {
+                                    "tool_name": "search_web",
+                                    "params": {
+                                        "query": "..."
+                                    }
+                                }
+                            },
+                            {
+                                "name": "tool_result",
+                                "description": "工具调用返回的结果",
+                                "data_example": {
+                                    "tool_name": "search_web",
+                                    "result": {
+                                        "items": [...
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "name": "final_response",
+                                "description": "本轮的最终回答，通常包含 content、tab_id、turn_id 与可选 metadata（如 token 用量、tools_used）",
+                                "data_example": {
+                                    "tab_id": "tab*...",
+                                    "turn_id": "turn_...",
+                                    "content": "...",
+                                    "metadata": {
+                                        "token_usage": {
+                                            "input_tokens": 10,
+                                            "output_tokens": 20
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "name": "end_of_stream",
+                                "description": "表示流结束（可选）",
+                                "data_example": {}
+                            },
+                            {
+                                "name": "error",
+                                "description": "流中发生错误时发送，data 包含 message 与 trace（仅用于调试）",
+                                "data_example": {
+                                    "message": "错误信息",
+                                    "trace": "堆栈轨迹..."
+                                }
+                            }
+                        ]
+                    },
+                    "compatibility_notes": [
+                        "前端可传 camelCase 或 snake_case 字段（例：tabId / tab_id, userId / user_id），后端会做兼容处理。",
+                        "如果不传 frontend_state 而传 history，则后端会把 history 转为 messages 并构建 frontend_state。",
+                        "若既未提供 tab_id 也未提供 X-Tab-Id header，后端会自动生成 tab_id 并在 session_init 事件中返回。"
+                    ]
+                },
+                {
+                    "path": "/turn/{turn_id}/timeline/",
+                    "method": "GET",
+                    "summary": "获取指定 turn_id 的推理时间线事件",
+                    "request": {
+                        "path_params": {
+                            "turn_id": {
+                                "type": "string",
+                                "required": true,
+                                "description": "由 /chat_multiround/ 返回的 turn_id"
+                            }
+                        },
+                        "headers": {
+                            "Accept": "application/json"
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "返回时间线事件数组（可用于可视化推理过程）",
+                            "example": {
+                                "status": "ok",
+                                "turn_id": "turn_xyz_1700000000000",
+                                "events": [
+                                    {
+                                        "timestamp": "2025-11-08T09:41:00Z",
+                                        "event_type": "user_input",
+                                        "content": "LLM推理优化有哪些方向？"
+                                    },
+                                    {
+                                        "timestamp": "2025-11-08T09:41:01Z",
+                                        "event_type": "tool_invocation",
+                                        "content": "search_web(query='...')"
+                                    },
+                                    {
+                                        "timestamp": "2025-11-08T09:41:03Z",
+                                        "event_type": "tool_result",
+                                        "content": "返回结果摘要"
+                                    },
+                                    {
+                                        "timestamp": "2025-11-08T09:41:05Z",
+                                        "event_type": "model_reasoning",
+                                        "content": "模型的中间推理"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/chatbot_profile/",
+                    "method": "GET",
+                    "summary": "获取当前用户/会话的 chatbot profile（异步/可由前端发一个可选 body 或 header 指定 tab_id）",
+                    "request": {
+                        "content_type": "application/json (可选)",
+                        "headers": {
+                            "X-User-Id": "可选，优先于 body.user_id",
+                            "X-Tab-Id": "可选，优先于 body.tab_id"
+                        },
+                        "body_schema (optional)": {
+                            "tab_id": {
+                                "type": "string",
+                                "required": false,
+                                "description": "可选：指定要查看的 profile 对应的 tab_id"
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "返回内存摘要与最近的 profile 事件（若存在）",
+                            "example": {
+                                "status": "ok",
+                                "tab_id": "tab_profile_123",
+                                "memory_excerpt": "长期记忆摘要（字符串截断）",
+                                "last_profile_event": {
+                                    "Q": "系统：...",
+                                    "A": "...",
+                                    "T": "2025-..."
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "path": "/chatbot_profile/",
+                    "method": "POST",
+                    "summary": "提交或更新学生/用户的结构化 profile（后端会运行硬规则筛选并将结果写入 memory）",
+                    "request": {
+                        "content_type": "application/json",
+                        "body_schema": {
+                            "tab_id": {
+                                "type": "string",
+                                "required": false,
+                                "description": "可选：指定 profile 存储的 tab_id"
+                            },
+                            "student_info": {
+                                "type": "object",
+                                "required": true,
+                                "description": "结构化学生信息（必须包含 major_code 与 target_term，否则返回 400）",
+                                "properties": {
+                                    "major_code": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "target_term": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "completed_courses": {
+                                        "type": "array",
+                                        "description": "已修课程列表，支持字符串或对象（{course_code|code}）"
+                                    },
+                                    "degree_level": {
+                                        "type": "string"
+                                    },
+                                    "current_uoc": {
+                                        "type": "number"
+                                    },
+                                    "max_uoc_per_term": {
+                                        "type": "number"
+                                    },
+                                    "wam": {
+                                        "type": "number"
+                                    },
+                                    "exclude_courses": {
+                                        "type": "array"
+                                    },
+                                    "min_course_level": {
+                                        "type": "number"
+                                    },
+                                    "max_course_level": {
+                                        "type": "number"
+                                    },
+                                    "requirement_types": {
+                                        "type": "array"
+                                    },
+                                    "graduation_req_dir": {
+                                        "type": "string"
+                                    },
+                                    "course_data_file": {
+                                        "type": "string"
+                                    },
+                                    "goals": {
+                                        "type": "array"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "成功返回推荐结果（并异步写入 memory）",
+                            "example": {
+                                "status": "ok",
+                                "profile": {
+                                    "student_info": {
+                                        "major_code": "COMP",
+                                        "target_term": "T1-2026",
+                                        "completed_courses": [
+                                            {
+                                                "course_code": "COMP1511",
+                                                "title": "..."
+                                            }
+                                        ]
+                                    },
+                                    "recommendation": {
+                                        "all_major_courses": [
+                                            "COMP1511",
+                                            "COMP1521"
+                                        ],
+                                        "enable_choose_courses": [
+                                            "COMPxxxx"
+                                        ]
+                                    },
+                                    "updated_at": "2025-11-08T10:00:00Z",
+                                    "tab_id": "tab_profile_123"
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "校验失败（例如缺少 major_code 或 target_term）",
+                            "example": {
+                                "status": "error",
+                                "error": "major_code is required"
+                            }
+                        },
+                        "500": {
+                            "description": "工具调用或写入 memory 时发生内部错误",
+                            "example": {
+                                "status": "error",
+                                "error": "filter_compiled_courses failed: ..."
+                            }
+                        }
+                    }
+                }
+            ],
+            "field_mapping_notes": {
+                "camel_vs_snake": "前端可以使用 camelCase（tabId, userId, frontendState）或 snake_case（tab_id, user_id, frontend_state）。后端视为等价，会做兼容处理。",
+                "legacy_history": "若传入 legacy history（数组，每项包含 user/bot 字段），后端会把其转换成 frontend_state.messages（role/content 结构）。",
+                "required_query": "重点提醒：/chat_multiround/ 必须使用 `query` 字段携带用户输入（后端直接读取 data.get('query') 并做 strip 检查）。不要把 `query` 改为 `user_input`。"
+            },
+            "common_event_types": [
+                "session_init",
+                "partial_response",
+                "tool_invocation",
+                "tool_result",
+                "final_response",
+                "end_of_stream",
+                "error"
+            ]
+        }
+    }
+}

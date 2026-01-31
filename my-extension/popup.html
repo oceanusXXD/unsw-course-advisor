@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>课程助手</title>
+  </head>
+  <body>
+    <div id="app-container" data-view="login">
+      <!-- 登录/许可证 -->
+      <div id="login-view" class="view">
+        <div class="card">
+          <div class="card-icon">[Guard]</div>
+          <h2>验证许可证</h2>
+          <form id="license-form">
+            <div class="form-group">
+              <label for="license-key">License Key</label>
+              <input
+                type="text"
+                id="license-key"
+                class="input"
+                placeholder="请输入您的 License Key"
+                required
+              />
+            </div>
+            <div class="error-message" id="license-error"></div>
+            <button
+              type="submit"
+              id="verify-license-btn"
+              class="btn btn-primary"
+            >
+              <span class="btn-text">验证许可证</span>
+              <span class="spinner" style="display: none">⏳</span>
+            </button>
+          </form>
+          <div class="link-section">
+            <a href="#" id="create-license-link">还没有许可证？点击创建</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Key -->
+      <div id="userkey-view" class="view">
+        <div class="card">
+          <div class="card-icon"></div>
+          <h2>输入 User Key</h2>
+
+          <div class="license-info-card">
+            <div class="info-row">
+              <span class="info-label">许可证状态:</span>
+              <span class="info-value" id="verified-license-status"></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">到期时间:</span>
+              <span class="info-value" id="verified-license-expiry"></span>
+            </div>
+          </div>
+
+          <form id="userkey-form">
+            <div class="form-group">
+              <label for="user-key">User Key</label>
+              <input
+                type="text"
+                id="user-key"
+                class="input"
+                placeholder="请输入您的 User Key"
+                required
+              />
+            </div>
+            <div class="error-message" id="userkey-error"></div>
+            <button type="submit" id="activate-btn" class="btn btn-primary">
+              <span class="btn-text">激活</span>
+              <span class="spinner" style="display: none">⏳</span>
+            </button>
+          </form>
+          <div class="link-section">
+            <button id="back-to-license-btn" class="btn-link">
+              ← 返回重新输入许可证
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主界面 -->
+      <div id="main-view" class="view">
+        <header class="header">
+          <div id="license-info" style="display: none">
+            <span class="license-status"></span>
+            <span class="license-expiry"></span>
+            <span class="license-spinner" style="display: none">⏳</span>
+          </div>
+          <button id="logout-btn" class="btn btn-secondary">登出</button>
+        </header>
+
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="unsw-view">UNSW 选课</button>
+          <button class="tab-btn" data-tab="other-view" disabled>
+            (更多功能)
+          </button>
+        </div>
+
+        <!-- UNSW 批量选课 -->
+        <div id="unsw-view" class="tab-content active">
+          <div class="card">
+            <h3>UNSW 批量选课</h3>
+            <div class="warning" id="unsw-pageWarning" style="display: none">
+              [WARN] 请在 UNSW 选课页面 (my.unsw.edu.au) 使用此功能
+            </div>
+
+            <div class="form-group">
+              <label>上传加密课程文件</label>
+              <div id="dropzone" class="dropzone">
+                <span class="dropzone-icon" style="font-size: 24px">[Upload]</span>
+                <p id="dropzone-text">拖拽加密文件到这里, 或</p>
+                <button
+                  type="button"
+                  id="file-select-btn"
+                  class="btn btn-secondary"
+                >
+                  选择文件
+                </button>
+                <input type="file" id="file-input" style="display: none" />
+              </div>
+            </div>
+
+            <!-- 隐藏课程对文本框，JS 会填充 -->
+            <div class="form-group" style="display: none">
+              <label for="unsw-course-pairs">课程对</label>
+              <textarea id="unsw-course-pairs"></textarea>
+            </div>
+
+            <button id="unsw-enrollBtn" class="btn btn-primary">
+              <span class="btn-text">[START] 开始批量选课</span>
+              <span class="spinner" style="display: none">⏳</span>
+            </button>
+
+            <div
+              id="unsw-status"
+              class="status-message"
+              style="display: none"
+            ></div>
+          </div>
+        </div>
+
+        <!-- 其他功能占位 -->
+        <div id="other-view" class="tab-content">
+          <div class="card">
+            <h3>更多功能</h3>
+            <p class="info-text">此功能正在开发中...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+    <script src="popup-utils.js"></script>
+  </body>
+</html>

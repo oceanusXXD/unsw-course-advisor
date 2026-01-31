@@ -1,0 +1,397 @@
+/* ========================================
+    InputDock 容器
+   ======================================== */
+.inputDock {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  /* 继承 glass-liquid 样式，这里只定义布局 */
+}
+
+.dock {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* ========================================
+    拖拽提示
+   ======================================== */
+.dragOverlay {
+  position: absolute;
+  inset: -16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(255, 210, 0, 0.05);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: 20px;
+  border: 2px dashed var(--primary);
+  z-index: 10;
+  font-weight: 600;
+  color: var(--primary);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   左侧工具栏
+   ======================================== */
+.leftTools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolBtn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--surface-weak);
+    opacity: 1;
+  }
+
+  &.active {
+    background: rgba(255, 210, 0, 0.15);
+    color: var(--primary);
+    opacity: 1;
+  }
+}
+
+.toolBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm), var(--glow-primary);
+}
+
+/* ========================================
+    中间输入区
+   ======================================== */
+.inputArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  justify-content: center;
+}
+
+/* 文件预览 */
+.filePreviewArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--surface-weak);
+}
+
+.fileChip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  max-width: 240px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--surface-weak);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &.uploading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+}
+
+.uploadProgress {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fileIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--surface-weak);
+  overflow: hidden;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fileName {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.removeBtn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+    background: var(--surface-weak);
+  }
+}
+
+/* 文本输入框 */
+.textarea {
+  width: 100%;
+  min-height: 24px;
+  max-height: 240px;
+  resize: none;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1.6;
+  outline: none;
+  font-family: inherit;
+  padding-top: 0;
+  padding-bottom: 6px;
+  transition: padding-top 0.14s ease, padding-bottom 0.14s ease, height 0.12s ease;
+
+  &::placeholder {
+    opacity: 0.5;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: none; /* 去掉聚焦时的阴影 */
+    border: none; /* 去掉可能出现的边框 */
+  }
+}
+
+/* 字符计数 */
+.charCount {
+  align-self: flex-end;
+  font-size: 11px;
+  opacity: 0.6;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--surface-weak);
+  font-variant-numeric: tabular-nums;
+  animation: fadeIn 0.2s ease;
+
+  &.warning {
+    color: var(--danger);
+    font-weight: 600;
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   [Upload] 右侧发送按钮
+   ======================================== */
+.rightTools {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sendBtn {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: var(--primary-ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-md); /* [OK] 默认只保留阴影，不发光 */
+  transition: all 0.3s var(--ease-smooth);
+
+  &:hover:not(.disabled) {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-lg), var(--glow-primary); /* [OK] 悬停时才加上发光效果 */
+  }
+
+  &:active:not(.disabled) {
+    transform: translateY(0) scale(1);
+    box-shadow: var(--shadow-md); /* [OK] 点击恢复正常阴影 */
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.stopBtn {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: var(--danger);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s var(--ease-smooth);
+  animation: pulse 1.5s ease-in-out infinite;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+}
+
+/* Tooltip */
+.tooltip {
+  padding: 8px 12px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: fadeIn 0.15s ease;
+}
+
+/* ========================================
+    响应式
+   ======================================== */
+@media (max-width: 768px) {
+  .inputDock {
+    min-height: 80px !important;
+    height: auto !important;
+  }
+
+  .dock {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .leftTools {
+    order: 2;
+    justify-content: flex-start;
+  }
+
+  .inputArea {
+    order: 1;
+  }
+
+  .rightTools {
+    order: 3;
+    justify-content: center;
+  }
+
+  .sendBtn,
+  .stopBtn {
+    width: 56px;
+    height: 56px;
+  }
+}

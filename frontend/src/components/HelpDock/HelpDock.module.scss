@@ -1,0 +1,408 @@
+/* ========================================
+    主容器
+   ======================================== */
+.helpDock {
+  position: relative;
+  transition: all 0.35s var(--ease-smooth);
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+/* ========================================
+    折叠状态：圆形按钮
+   ======================================== */
+.helpDock.collapsed {
+  .toggleButton {
+    width: 64px; /*  保持正圆 */
+    height: 64px; /*  保持正圆 */
+    border-radius: 50%;
+    border: 2px solid var(--glass-border);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+      ),
+      var(--glass-bg);
+    backdrop-filter: var(--glass-blur) var(--glass-sat);
+    -webkit-backdrop-filter: var(--glass-blur) var(--glass-sat);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--duration-slow) var(--ease-smooth);
+    color: var(--fg);
+    opacity: 0.9;
+
+    &:hover {
+      opacity: 1;
+      background: linear-gradient(135deg, rgba(255, 210, 0, 0.2), rgba(255, 210, 0, 0.1)),
+        var(--glass-bg);
+      border-color: var(--primary);
+      box-shadow: 0 4px 20px rgba(255, 210, 0, 0.25), var(--glow-primary);
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    svg {
+      transition: transform var(--duration-slow) var(--ease-bounce);
+    }
+
+    &:hover svg {
+      transform: rotate(15deg) scale(1.1);
+    }
+  }
+}
+
+/* ========================================
+   [Stats] 展开状态：横向图标条
+   ======================================== */
+.helpDock.expanded {
+  .optionsPanel {
+    width: 100%; /* 继承父容器宽度（280px 或 60px） */
+    height: 88px;
+    padding: 0 var(--space-xl);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--glass-border);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+      ),
+      var(--glass-bg);
+    backdrop-filter: var(--glass-blur) var(--glass-sat);
+    -webkit-backdrop-filter: var(--glass-blur) var(--glass-sat);
+    box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 210, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    animation: expandPanel 0.4s var(--ease-bounce);
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .panelHeader {
+    display: none;
+  }
+}
+
+@keyframes expandPanel {
+  0% {
+    width: 60px;
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    width: 100%;
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========================================
+    选项列表：横向排列
+   ======================================== */
+.optionsList {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  width: 100%;
+}
+
+.optionItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-bounce);
+  flex-shrink: 0;
+  color: var(--fg);
+  opacity: 0.75;
+
+  &:hover {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(255, 210, 0, 0.15), rgba(255, 210, 0, 0.05));
+    border-color: var(--primary);
+    transform: translateY(-6px) scale(1.12);
+    box-shadow: 0 8px 24px rgba(255, 210, 0, 0.3);
+
+    .optionIcon {
+      color: var(--primary);
+      transform: scale(1.15);
+    }
+
+    .optionContent {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-10px);
+    }
+  }
+
+  &:active {
+    transform: translateY(-3px) scale(1.08);
+  }
+
+  /* 延迟动画 */
+  &:nth-child(1) {
+    animation: iconPop 0.5s var(--ease-bounce) 0.1s backwards;
+  }
+  &:nth-child(2) {
+    animation: iconPop 0.5s var(--ease-bounce) 0.2s backwards;
+  }
+  &:nth-child(3) {
+    animation: iconPop 0.5s var(--ease-bounce) 0.3s backwards;
+  }
+}
+
+@keyframes iconPop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-180deg);
+  }
+  60% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    opacity: 0.75;
+    transform: scale(1) rotate(0);
+  }
+}
+
+.optionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: all 0.25s var(--ease-bounce);
+
+  svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
+  }
+}
+
+/* ========================================
+    Tooltip：Hover 后显示
+   ======================================== */
+.optionContent {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  padding: var(--space-md) 18px;
+  background: var(--bg);
+  border: 2px solid var(--glass-border);
+  border-radius: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--duration-slow) var(--ease-bounce);
+  box-shadow: var(--shadow-xl), 0 0 20px rgba(255, 210, 0, 0.12);
+  pointer-events: none;
+  z-index: 1000;
+  backdrop-filter: blur(20px);
+
+  /* 小三角箭头 */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 9px solid var(--bg);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-top: 11px solid var(--glass-border);
+  }
+}
+
+.optionLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 4px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.optionDescription {
+  font-size: 13px;
+  color: var(--fg-muted);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* ========================================
+    暗色主题优化（ 修复正圆）
+   ======================================== */
+[data-theme='dark'] {
+  .helpDock.collapsed .toggleButton {
+    box-shadow: var(--shadow-lg);
+    /*  移除导致椭圆的宽高设置，保持继承 */
+
+    &:hover {
+      box-shadow: 0 4px 20px rgba(255, 210, 0, 0.35), var(--glow-primary);
+    }
+  }
+
+  .helpDock.expanded .optionsPanel {
+    box-shadow: var(--shadow-xl), 0 0 28px rgba(255, 210, 0, 0.15);
+  }
+
+  .optionItem:hover {
+    box-shadow: 0 8px 24px rgba(255, 210, 0, 0.35);
+  }
+
+  .optionContent {
+    background: rgba(25, 25, 25, 0.98);
+    border-color: rgba(255, 210, 0, 0.35);
+    box-shadow: var(--shadow-2xl), 0 0 24px rgba(255, 210, 0, 0.2);
+
+    &::after {
+      border-top-color: rgba(25, 25, 25, 0.98);
+    }
+
+    &::before {
+      border-top-color: rgba(255, 210, 0, 0.35);
+    }
+  }
+}
+
+/* ========================================
+    微动画效果
+   ======================================== */
+.optionItem {
+  &:hover .optionIcon svg {
+    animation: iconBounce 0.6s var(--ease-bounce);
+  }
+}
+
+@keyframes iconBounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.15) rotate(-8deg);
+  }
+  50% {
+    transform: scale(1.25) rotate(8deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(-4deg);
+  }
+}
+
+/* ========================================
+   [Result] 光晕效果
+   ======================================== */
+.helpDock.expanded .optionsPanel {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: var(--radius-lg);
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 210, 0, 0.15),
+      rgba(255, 210, 0, 0.05),
+      transparent
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--duration-slow) ease;
+    pointer-events: none;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+    响应式适配
+   ======================================== */
+@media (max-width: 1200px) {
+  .helpDock.expanded .optionsPanel {
+    padding: 0 var(--space-lg);
+  }
+
+  .optionsList {
+    gap: var(--space-md);
+  }
+
+  .optionItem {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .helpDock.collapsed .toggleButton {
+    width: 56px; /*  移动端稍小但保持正圆 */
+    height: 56px; /*  保持正圆 */
+  }
+
+  .helpDock.expanded .optionsPanel {
+    height: 72px;
+    padding: 0 var(--space-lg);
+  }
+
+  .optionItem {
+    width: 44px;
+    height: 44px;
+  }
+
+  .optionIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .optionContent {
+    padding: 10px 14px;
+  }
+
+  .optionLabel {
+    font-size: 13px;
+  }
+
+  .optionDescription {
+    font-size: 11px;
+  }
+}

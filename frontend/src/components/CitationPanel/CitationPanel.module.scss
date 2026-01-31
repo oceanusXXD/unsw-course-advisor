@@ -1,0 +1,352 @@
+/* CitationPanel.module.scss */
+
+/* ========================================
+    主面板 - 展开状态
+   ======================================== */
+.citationPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: 18px;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--glass-border);
+  transition: all var(--duration-slow) var(--ease-smooth);
+  background-clip: padding-box;
+  box-sizing: border-box;
+}
+
+/* ========================================
+    收起状态 - 窄条模式
+   ======================================== */
+.citationPanelCollapsed {
+  width: 100%; /*  继承父容器的 60px */
+  height: 100%;
+  padding: 14px 8px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  transition: all var(--duration-slow) var(--ease-smooth);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/*  展开按钮 */
+.expandBtn {
+  width: 44px; /*  适配 60px 容器（60 - 8*2 = 44） */
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-weak);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--duration-base) ease, box-shadow var(--duration-base) ease;
+  color: var(--fg);
+  flex-shrink: 0;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+/*  图标区域 */
+.collapsedIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-weak);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+  flex-shrink: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* [Tag] 数量徽章 */
+.collapsedBadge {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: var(--primary-ink);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+/* ========================================
+   [Pin] 面板头部
+   ======================================== */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+
+  .titleText {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/*  收起按钮 */
+.collapseBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--surface-weak);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: transform var(--duration-base) ease, opacity var(--duration-base) ease;
+  color: var(--fg);
+
+  &:hover {
+    opacity: 1;
+    transform: rotate(180deg);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+/* 引用数量徽章 */
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 210, 0, 0.2), rgba(255, 210, 0, 0.1));
+  border: 1px solid var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* ========================================
+    引用列表
+   ======================================== */
+.citationList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-right: 6px;
+  -webkit-overflow-scrolling: touch;
+
+  /* 渐变遮罩 */
+  mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black calc(100% - 20px),
+    transparent 100%
+  );
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-pill);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--border-strong);
+  }
+}
+
+/* ========================================
+    引用卡片
+   ======================================== */
+.citationCard {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-weak);
+  transition: transform var(--duration-base) ease, box-shadow var(--duration-base) ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.citationHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.citationIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.citationContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.citationTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.citationDesc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg);
+  opacity: 0.85;
+  word-break: break-word;
+}
+
+/* [Note] 展开/收起按钮 */
+.expandDescBtn {
+  margin-left: var(--space-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  padding: var(--space-xs) 6px;
+  border-radius: var(--radius-xs);
+  transition: all var(--duration-base) ease;
+
+  &:hover {
+    text-decoration: underline;
+    background: var(--surface-weak);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+/* [Link] 链接操作行 */
+.linkRow {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.citationLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 6px var(--space-sm);
+  border-radius: var(--radius-xs);
+  background: var(--surface-weak);
+  transition: all var(--duration-base) ease;
+
+  &:hover {
+    text-decoration: underline;
+    background: var(--surface);
+  }
+}
+
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--fg);
+  background: var(--surface-weak);
+  border-radius: var(--radius-xs);
+  padding: 6px var(--space-sm);
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-base) ease;
+
+  &:hover {
+    background: var(--surface);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+/* ========================================
+   空状态
+   ======================================== */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: 40px var(--space-xl);
+  opacity: 0.7;
+  height: 100%;
+}
+
+.emptyIcon {
+  opacity: 0.35;
+  color: var(--fg);
+}
+
+.emptyState p {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--fg);
+}

@@ -1,0 +1,96 @@
+# ===============================================
+# LangGraph Agent Configuration (Final v7.1)
+# ===============================================
+
+entry_point: load_memory
+
+nodes:
+  - id: load_memory
+    function: .node.load_memory.node_load_memory
+    monitor: true
+  - id: prepare_input
+    function: .node.prepare_input.node_prepare_input
+    monitor: true
+  - id: router_context
+    function: .node.router_context.node_router_context
+    monitor: true
+  - id: router_llm_planner
+    function: .node.router_llm_planner.node_router_llm_planner
+    monitor: true
+  - id: router_guard
+    function: .node.router_guard.node_router_guard
+    monitor: true
+  - id: agentic_router
+    function: .node.agentic_router.node_agentic_router
+    monitor: true
+  - id: retrieve
+    function: .node.retrieve.node_retrieve
+    monitor: true
+  - id: evaluate_retrieval
+    function: .node.evaluate_retrieval.node_evaluate_retrieval
+    monitor: true
+  - id: rag_tool_executor
+    function: .node.rag_tool_executor.node_rag_tool_executor
+    monitor: true
+  - id: tool_executor
+    function: .node.tool_executor.node_tool_executor
+    monitor: true
+  - id: tool_post_processor
+    function: .node.tool_post_processor.node_tool_post_processor
+    monitor: true
+  - id: generate
+    function: .node.generate.node_generate
+    monitor: true
+  - id: grounding_check
+    function: .node.grounding_check.node_grounding_check
+    monitor: true
+
+edges:
+  - from: load_memory
+    to: prepare_input
+  - from: prepare_input
+    to: router_context
+  - from: router_context
+    to: router_llm_planner
+  - from: router_llm_planner
+    to: router_guard
+
+conditional_edges:
+  router_guard:
+    key: route
+    mapping:
+      general_chat: generate
+      call_tool: tool_executor
+      retrieve_rag: agentic_router
+      finish: generate
+
+  agentic_router:
+    key: route
+    mapping:
+      retrieve_rag: retrieve
+      call_tool: rag_tool_executor
+      finish: generate
+
+  #  关键修复：条件判断的起点是 tool_executor 节点
+  tool_executor:
+    function: .node.tool_post_processor.check_if_fixed_reply_exists
+    mapping:
+      generate_fixed_reply: tool_post_processor
+      generate_with_llm: generate
+
+edges_extra:
+  # RAG 子循环路径
+  - from: retrieve
+    to: evaluate_retrieval
+  - from: evaluate_retrieval
+    to: agentic_router
+  - from: rag_tool_executor
+    to: agentic_router
+
+  # 结束路径
+  - from: tool_post_processor
+    to: __END__
+  - from: generate
+    to: grounding_check
+  - from: grounding_check
+    to: __END__

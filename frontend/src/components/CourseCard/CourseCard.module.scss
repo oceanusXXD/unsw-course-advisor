@@ -1,0 +1,126 @@
+.card {
+  min-width: 280px;
+  max-width: 360px;
+  padding: 12px;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.uoc {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.title {
+  font-size: 16px;
+  margin-top: 4px;
+}
+.meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+.brief {
+  font-size: 13px;
+  opacity: 0.9;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.source {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 6px;
+}
+.card {
+  min-width: 280px;
+  max-width: 360px;
+  padding: 16px;
+  scroll-snap-align: start;
+  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur) var(--glass-sat);
+  -webkit-backdrop-filter: var(--glass-blur) var(--glass-sat);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-float);
+  border-color: var(--primary);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.head strong {
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--fg), var(--primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.uoc {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+.meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  opacity: 0.7;
+  margin: 8px 0;
+}
+
+.brief {
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.actions .btn {
+  font-size: 12px;
+  height: 32px;
+  padding: 0 12px;
+}
+
+.source {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}

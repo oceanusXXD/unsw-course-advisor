@@ -1,0 +1,231 @@
+// src/components/ChatMessage/ChatMessage.module.scss
+
+/* ========== 基础消息样式 ========== */
+.message {
+  width: 100%;
+  max-width: 100%;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease;
+  &.expanded {
+    max-width: 1200px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== 用户消息 - 右对齐 ========== */
+.userMessage {
+  align-items: flex-end;
+}
+
+.userBubble {
+  max-width: 70%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--primary), rgba(255, 210, 0, 0.85));
+  color: var(--primary-ink);
+  box-shadow: 0 4px 16px rgba(255, 210, 0, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.userContent {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* ========== AI 消息 - 左对齐 ========== */
+.assistantMessage {
+  align-items: flex-start;
+}
+
+.assistantContent {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assistantText {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-width: 80ch;
+
+  /* Markdown 样式 */
+  :global {
+    p {
+      margin: 0.8em 0;
+      max-width: 600px;
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--surface-weak);
+      font-size: 0.9em;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    pre {
+      margin: 12px 0;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--surface-weak);
+      overflow-x: auto;
+
+      code {
+        padding: 0;
+        background: transparent;
+      }
+    }
+
+    ul,
+    ol {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    blockquote {
+      margin: 12px 0;
+      padding: 12px 16px;
+      border-left: 3px solid var(--primary);
+      background: var(--surface-weak);
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+      opacity: 0.9;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 20px 0 12px 0;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+
+      th,
+      td {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+      }
+
+      th {
+        background: var(--surface-weak);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+/* ========== Timeline 容器 ========== */
+.timelineWrapper {
+  max-width: 80ch;
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface-weak);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border);
+}
+
+/* ========== 错误消息 ========== */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(158, 27, 50, 0.1);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-size: 14px;
+  max-width: 80ch;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+}
+
+/* ========== 打字光标 ========== */
+.typingIndicator {
+  animation: blink 1.2s infinite;
+  margin-left: 4px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ========== Tooltip ========== */
+.tooltip {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  animation: fadeIn 0.15s ease;
+  background: var(--bg-elev);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  z-index: 50;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+  .userBubble {
+    max-width: 85%;
+  }
+
+  .assistantText {
+    max-width: 100%;
+  }
+
+  .timelineWrapper {
+    max-width: 100%;
+  }
+}

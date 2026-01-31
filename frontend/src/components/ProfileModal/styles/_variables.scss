@@ -1,0 +1,111 @@
+// src/components/ProfileModal/styles/_variables.scss
+
+//  Light Theme
+[data-theme='light'] {
+  // 背景层级
+  --modal-overlay-bg: rgba(0, 0, 0, 0.4);
+  --modal-overlay-backdrop: blur(12px);
+  --modal-container-bg: #ffffff;
+  --modal-container-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+  // 边框
+  --modal-border: rgba(0, 0, 0, 0.08);
+  --modal-border-hover: rgba(0, 0, 0, 0.15);
+
+  // 文字
+  --modal-text-primary: #1a1a1a;
+  --modal-text-secondary: rgba(0, 0, 0, 0.6);
+  --modal-text-tertiary: rgba(0, 0, 0, 0.45);
+
+  // 表单控件
+  --input-bg: #f8f9fa;
+  --input-bg-hover: #f1f3f5;
+  --input-bg-focus: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.12);
+  --input-border-focus: #ffd200;
+  --input-shadow-focus: rgba(255, 210, 0, 0.15);
+  --input-placeholder: rgba(0, 0, 0, 0.35);
+
+  // 按钮
+  --btn-secondary-bg: #f1f3f5;
+  --btn-secondary-bg-hover: #e9ecef;
+  --btn-secondary-border: rgba(0, 0, 0, 0.1);
+
+  // 状态色
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --success-border: rgba(34, 197, 94, 0.25);
+  --success-text: #16a34a;
+
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --error-border: rgba(239, 68, 68, 0.25);
+  --error-text: #dc2626;
+
+  --info-bg: rgba(59, 130, 246, 0.1);
+  --info-border: rgba(59, 130, 246, 0.25);
+  --info-text: #2563eb;
+
+  // 主题色渐变
+  --primary-gradient-start: rgba(255, 210, 0, 0.12);
+  --primary-gradient-end: rgba(255, 210, 0, 0.06);
+  --primary-border: rgba(255, 210, 0, 0.35);
+
+  // 滚动条
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+}
+
+//  Dark Theme
+[data-theme='dark'] {
+  // 背景层级
+  --modal-overlay-bg: rgba(0, 0, 0, 0.7);
+  --modal-overlay-backdrop: blur(16px);
+  --modal-container-bg: #1e1e1e;
+  --modal-container-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  // 边框
+  --modal-border: rgba(255, 255, 255, 0.1);
+  --modal-border-hover: rgba(255, 255, 255, 0.2);
+
+  // 文字
+  --modal-text-primary: #ffffff;
+  --modal-text-secondary: rgba(255, 255, 255, 0.7);
+  --modal-text-tertiary: rgba(255, 255, 255, 0.5);
+
+  // 表单控件
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-bg-hover: rgba(255, 255, 255, 0.08);
+  --input-bg-focus: rgba(255, 255, 255, 0.1);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-border-focus: #ffd200;
+  --input-shadow-focus: rgba(255, 210, 0, 0.2);
+  --input-placeholder: rgba(255, 255, 255, 0.3);
+
+  // 按钮
+  --btn-secondary-bg: rgba(255, 255, 255, 0.08);
+  --btn-secondary-bg-hover: rgba(255, 255, 255, 0.12);
+  --btn-secondary-border: rgba(255, 255, 255, 0.15);
+
+  // 状态色
+  --success-bg: rgba(34, 197, 94, 0.15);
+  --success-border: rgba(34, 197, 94, 0.35);
+  --success-text: #4ade80;
+
+  --error-bg: rgba(239, 68, 68, 0.15);
+  --error-border: rgba(239, 68, 68, 0.35);
+  --error-text: #f87171;
+
+  --info-bg: rgba(59, 130, 246, 0.15);
+  --info-border: rgba(59, 130, 246, 0.35);
+  --info-text: #60a5fa;
+
+  // 主题色渐变
+  --primary-gradient-start: rgba(255, 210, 0, 0.18);
+  --primary-gradient-end: rgba(255, 210, 0, 0.08);
+  --primary-border: rgba(255, 210, 0, 0.4);
+
+  // 滚动条
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+  --scrollbar-track: rgba(255, 255, 255, 0.05);
+}

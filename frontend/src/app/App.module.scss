@@ -1,0 +1,282 @@
+/* ========================================
+   布局变量系统
+   ======================================== */
+:root {
+  /* 间距 */
+  --layout-gap: 12px;
+  --layout-padding: 12px;
+
+  /* 左侧宽度 */
+  --left-width-expanded: 360px;
+  --left-width-collapsed: 96px;
+
+  /* 右侧宽度 */
+  --right-width-expanded: 280px;
+  --right-width-collapsed: 80px; /*  改为 80px，容纳更大的圆形按钮 */
+
+  /* 固定高度 */
+  --input-height: 88px;
+
+  /* Profile 三态高度 */
+  --profile-height-collapsed: 88px;
+  --profile-height-compact: 88px;
+  --profile-height-expanded: 264px;
+}
+
+/* ========================================
+    主容器
+   ======================================== */
+.appContainer {
+  width: 100%;
+  height: 100vh;
+  padding: var(--layout-padding);
+  overflow: hidden;
+}
+
+/* ========================================
+   Shell 状态机（修复版 - 分离控制）
+   ======================================== */
+.shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  /* 默认值 */
+  --current-left-width: var(--left-width-expanded);
+  --current-citation-width: var(--right-width-expanded);
+  --current-help-width: var(--right-width-expanded);
+  --current-profile-height: var(--profile-height-compact);
+
+  /* History 状态控制左侧宽度 */
+  &.history-collapsed {
+    --current-left-width: var(--left-width-collapsed);
+  }
+
+  /* Profile 状态控制左下高度 */
+  &.profile-collapsed {
+    --current-profile-height: var(--profile-height-collapsed);
+  }
+  &.profile-compact {
+    --current-profile-height: var(--profile-height-compact);
+  }
+  &.profile-expanded {
+    --current-profile-height: var(--profile-height-expanded);
+  }
+
+  /* Citation 状态只控制 Citation 面板 */
+  &.citation-collapsed {
+    --current-citation-width: var(--right-width-collapsed);
+  }
+
+  /* Help 状态只控制 Help 面板 */
+  &.help-collapsed {
+    --current-help-width: var(--right-width-collapsed);
+  }
+}
+
+/* ========================================
+   [Package] 六个布局槽位
+   ======================================== */
+
+/* 1⃣ History - 左上 */
+.historySlot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--current-left-width);
+  bottom: calc(var(--current-profile-height) + var(--layout-gap));
+  transition: all 0.35s var(--ease-smooth);
+}
+
+/* 2⃣ Profile - 左下 */
+.profileSlot {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: var(--current-left-width);
+  height: var(--current-profile-height);
+  transition: all 0.35s var(--ease-smooth);
+}
+
+/* 3⃣ ChatArea - 中上（只受 Citation 控制） */
+.chatArea {
+  position: absolute;
+  top: 0;
+  left: calc(var(--current-left-width) + var(--layout-gap));
+  right: calc(var(--current-citation-width) + var(--layout-gap));
+  bottom: calc(var(--input-height) + var(--layout-gap));
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.06) 50%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    var(--glass-bg);
+  backdrop-filter: var(--glass-blur) var(--glass-sat);
+  -webkit-backdrop-filter: var(--glass-blur) var(--glass-sat);
+  border: 2px solid var(--glass-border);
+  overflow: hidden;
+  transition: all 0.35s var(--ease-smooth);
+}
+
+/* 4⃣ Input - 中下（只受 Help 控制） */
+.inputSlot {
+  position: absolute;
+  bottom: 0;
+  left: calc(var(--current-left-width) + var(--layout-gap));
+  right: calc(var(--current-help-width) + var(--layout-gap));
+  height: var(--input-height);
+  display: flex;
+  transition: all 0.35s var(--ease-smooth);
+}
+
+/* 5⃣ Citation - 右上 */
+.citationSlot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--current-citation-width);
+  bottom: calc(var(--input-height) + var(--layout-gap));
+  transition: all 0.35s var(--ease-smooth);
+  overflow: hidden;
+}
+
+/* 6⃣ Help - 右下 */
+.helpSlot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: var(--current-help-width);
+  height: var(--input-height);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  transition: all 0.35s var(--ease-smooth);
+  overflow: visible; /*  允许按钮的阴影显示 */
+}
+
+/* ========================================
+    ChatArea 内部样式
+   ======================================== */
+.emptyWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--space-xl);
+}
+
+.chatFeed {
+  height: 100%;
+  padding: var(--space-xl);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.messageWrapper {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 var(--space-sm);
+  transition: max-width 0.35s var(--ease-smooth);
+}
+
+/* History 收起时消息区域变宽 */
+.shell.history-collapsed .messageWrapper {
+  max-width: 1200px;
+}
+
+/* ========================================
+   回到最新按钮
+   ======================================== */
+.scrollHint {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  transition: opacity var(--duration-slow) ease, transform var(--duration-slow) ease;
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(10px);
+  }
+}
+
+.backToLatest {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--primary-ink);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  border: none;
+  box-shadow: 0 4px 16px rgba(255, 210, 0, 0.3), var(--glow-primary);
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(255, 210, 0, 0.4), var(--glow-primary);
+    transform: translateY(-2px);
+  }
+}
+
+/* ========================================
+    响应式适配
+   ======================================== */
+@media (max-width: 1200px) {
+  :root {
+    --left-width-expanded: 320px;
+    --left-width-collapsed: 88px;
+    --right-width-expanded: 240px;
+    --right-width-collapsed: 72px; /*  响应式也调整 */
+    --profile-height-expanded: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .appContainer {
+    padding: var(--space-sm);
+  }
+
+  /* 移动端隐藏侧边栏 */
+  .historySlot,
+  .profileSlot,
+  .citationSlot,
+  .helpSlot {
+    display: none;
+  }
+
+  /* 中间区域全宽 */
+  .chatArea,
+  .inputSlot {
+    left: 0;
+    right: 0;
+  }
+
+  .messageWrapper {
+    max-width: 100% !important;
+  }
+
+  .inputSlot {
+    height: 80px;
+  }
+
+  .chatArea {
+    bottom: calc(80px + var(--space-sm));
+  }
+}
+
+@media (max-width: 480px) {
+  .appContainer {
+    padding: var(--space-xs);
+  }
+
+  .chatArea {
+    bottom: calc(80px + var(--space-sm));
+  }
+}

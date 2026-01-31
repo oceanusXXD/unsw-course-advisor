@@ -1,0 +1,263 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  min-height: 70vh;
+  padding: 40px 24px;
+}
+
+// 标题区域
+.hero {
+  text-align: center;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.welcomeText {
+  font-size: clamp(56px, 9vw, 84px);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  margin: 0;
+  color: var(--fg);
+  opacity: 0.9;
+  line-height: 1;
+}
+
+.brandName {
+  font-size: clamp(28px, 4.5vw, 42px);
+  font-weight: 700;
+  margin: 16px 0 0;
+  background: linear-gradient(135deg, #ffd200 0%, #ff8c00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+// 卡片网格
+.cardsGrid {
+  display: grid;
+  // 修改为3x3网格
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, auto);
+  gap: 32px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+// 预设卡片
+.presetCard {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  // 固定padding
+  padding: 42px 28px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  // 内部光效
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  &:hover {
+    transform: translateY(-12px) scale(1.03);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+
+    &::before {
+      opacity: 1;
+    }
+
+    .iconBox {
+      transform: scale(1.15) rotate(8deg);
+    }
+  }
+
+  &:active {
+    transform: translateY(-6px) scale(1.01);
+  }
+
+  // 闪烁效果
+  &.highlight {
+    animation: borderPulse 1.5s ease-in-out infinite;
+  }
+
+  // 淡入动画
+  &.fadeIn {
+    animation: contentFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) var(--delay) both;
+  }
+}
+
+// 图标盒子
+.iconBox {
+  // 固定尺寸
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+
+  // 使用CSS控制SVG尺寸，避免冲突
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+// 卡片标题
+.cardTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+// 卡片描述
+.cardDesc {
+  font-size: 15px;
+  color: var(--fg);
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 200px;
+  // 预留足够高度，防止文字换行时跳动
+  min-height: 3em;
+  display: flex;
+  align-items: center;
+}
+
+// 动画定义
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes borderPulse {
+  0%,
+  100% {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    border-color: var(--primary);
+    box-shadow: 0 0 30px 8px rgba(255, 210, 0, 0.4);
+  }
+}
+
+// 暗色主题
+:root[data-theme='dark'] {
+  .presetCard {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+// 响应式
+// 平板尺寸，只调整间距
+@media (max-width: 1024px) {
+  .cardsGrid {
+    max-width: 900px;
+    gap: 24px;
+  }
+}
+
+// 小平板/大手机，只调整间距
+@media (max-width: 768px) {
+  .container {
+    gap: 48px;
+  }
+
+  .cardsGrid {
+    gap: 20px;
+    max-width: 100%;
+  }
+
+  // 根据您的要求，这里不再修改卡片和图标的尺寸
+}
+
+// 手机竖屏，布局变为单列列表
+@media (max-width: 480px) {
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+  }
+
+  .presetCard {
+    aspect-ratio: unset;
+    padding: 32px 24px;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .iconBox {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .cardTitle,
+  .cardDesc {
+    text-align: left;
+  }
+
+  .cardDesc {
+    min-height: 0; // 单列布局不需要固定高度
+    max-width: none;
+  }
+}
